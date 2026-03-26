@@ -56,7 +56,22 @@ def generate_timetable():
 
 @api_bp.route('/schedules', methods=['GET'])
 def get_schedules():
-    results = db.fetch_all("SELECT * FROM schedule_options ORDER BY option_no, exam_date")
+    results = db.fetch_all("""
+        SELECT 
+            so.option_no,
+            so.subject_id,
+            s.name AS subject_name,
+            so.exam_date,
+            so.start_time,
+            so.end_time,
+            so.room_id,
+            r.name AS room_name,
+            so.fitness_score
+        FROM schedule_options so
+        JOIN subjects s ON so.subject_id = s.id
+        JOIN rooms r ON so.room_id = r.id
+        ORDER BY so.option_no, so.exam_date, so.start_time
+    """)
     # Group by option_no
     grouped = {}
     for r in results:
@@ -64,9 +79,12 @@ def get_schedules():
         if opt_no not in grouped: grouped[opt_no] = {'fitness': r['fitness_score'], 'schedule': []}
         grouped[opt_no]['schedule'].append({
             'subject_id': r['subject_id'],
+            'subject_name': r.get('subject_name'),
             'date': r['exam_date'].strftime('%Y-%m-%d'),
             'start': str(r['start_time']),
-            'room_id': r['room_id']
+            'end': str(r['end_time']),
+            'room_id': r['room_id'],
+            'room_name': r.get('room_name')
         })
     return jsonify({"success": True, "data": grouped})
 

@@ -94,13 +94,21 @@
                     <h2 class="font-headline text-4xl font-extrabold text-on-surface tracking-tight leading-tight">Refine and validate your academic roadmap.</h2>
                     <p class="mt-4 text-on-surface-variant leading-relaxed">The AI has generated an optimized path. Review conflicts, adjust room assignments, and finalize the curriculum with one click.</p>
                 </div>
-                <div class="flex gap-3">
-                    <button class="px-8 py-3.5 rounded-full border border-slate-200 font-semibold text-sm hover:bg-white transition-all active:scale-95 shadow-sm">
-                        Save Changes
-                    </button>
-                    <button onclick="window.location.href='{{ url_for('export') }}'" class="px-8 py-3.5 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-bold text-sm shadow-xl active:scale-95 transition-all">
-                        Finalize Schedule
-                    </button>
+                <div class="flex flex-col md:flex-row gap-3 items-start md:items-center">
+                    <div class="flex items-center gap-3">
+                        <label class="text-sm font-semibold text-slate-600">Select option</label>
+                        <select id="optionSelector" class="bg-slate-100 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-primary/30 focus:border-primary">
+                            <option value="" disabled selected>Loading...</option>
+                        </select>
+                    </div>
+                    <div class="flex gap-3">
+                        <button id="refreshBtn" class="px-6 py-3 rounded-full border border-slate-200 font-semibold text-sm hover:bg-white transition-all active:scale-95 shadow-sm">
+                            Refresh schedules
+                        </button>
+                        <button id="finalizeBtn" class="px-8 py-3 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-bold text-sm shadow-xl active:scale-95 transition-all">
+                            Finalize & Export
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -114,57 +122,7 @@
                     <div class="col-span-1"></div>
                 </div>
                 <div class="divide-y" id="timetableBody">
-                    <!-- Row 1 -->
-                    <div class="grid grid-cols-12 px-6 py-5 items-center hover:bg-slate-50 transition-colors">
-                        <div class="col-span-2">
-                            <div class="text-sm font-semibold text-on-surface">Oct 12, 2024</div>
-                            <div class="text-xs text-on-surface-variant">09:00 AM - 11:30 AM</div>
-                        </div>
-                        <div class="col-span-4 pr-8">
-                            <input class="w-full bg-transparent border-none p-0 text-sm font-bold text-primary focus:ring-0" type="text" value="Advanced Quantum Mechanics III"/>
-                        </div>
-                        <div class="col-span-3">
-                            <div class="flex items-center gap-3">
-                                <img class="w-8 h-8 rounded-full border-2 border-white" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwz6etrituJg3oni243wNal3hVVCroOJPiQYMgLXSZHruCCgYh_Ua5JG5E0HXzCE2cfOFz8ma4hiN7G5Us4LQszEnicNPFeYBtwoh_Arek2L4bZw5FXAR1jUK5x96a_2X6EcfecgWqauplIQoAEZ0KrsMYdyvYzUKIID57ow825aWOTf3z1sUnGDNLqTubMEcD0t8vj1XNhf8wh5yXhL4R5IRdIR8j9KSWA3j_AHBdsQFmmzbr6xMAX0ieGT2R2OnLcdbmqM5PCFc"/>
-                                <span class="text-sm font-medium">Dr. Sarah Jenkins</span>
-                            </div>
-                        </div>
-                        <div class="col-span-2">
-                             <input class="w-full bg-slate-100 rounded-lg px-3 py-1.5 text-xs font-medium border-none" type="text" value="Hall 4C - Newton"/>
-                        </div>
-                        <div class="col-span-1 flex justify-end">
-                            <button class="text-slate-300 hover:text-primary">
-                                <span class="material-symbols-outlined">drag_indicator</span>
-                            </button>
-                        </div>
-                    </div>
-                    <!-- Row 2: Conflict Warning -->
-                    <div class="grid grid-cols-12 px-6 py-5 items-center bg-red-50 border-l-4 border-red-500">
-                        <div class="col-span-2">
-                            <div class="text-sm font-semibold text-on-surface">Oct 12, 2024</div>
-                            <div class="text-xs text-red-500 font-bold flex items-center gap-1">
-                                <span class="material-symbols-outlined text-xs">warning</span>
-                                Conflict: 10:00 AM
-                            </div>
-                        </div>
-                        <div class="col-span-4 pr-8">
-                            <input class="w-full bg-transparent border-none p-0 text-sm font-bold text-on-surface focus:ring-0" type="text" value="Neural Network Architectures"/>
-                        </div>
-                        <div class="col-span-3">
-                            <div class="flex items-center gap-3">
-                                <img class="w-8 h-8 rounded-full border-2 border-white shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZa1Mq1IXFMgdwKq9vo9sFNC70AXgpCf832SJuEltofmkbq2kFAuYGM4AibGEBv9XpJ7ZjGcYXs2rtu65-Q_-obnv54K1fiRo6CYYPdr4KbBk5q-jCSsdKcCvqfO8PBZe90MsvgQFKAAbeUwo1fxJ1jd4JTjvTtAOvC0W62Tn869qVNZDPVqak2tONeSVnRiCVd99reVX3Ds_k-XtKyLtr5SC2R9PkkipjEh00nwinhW3dQ653VnXjgumH1pVJJ4Pu4p9sxBd_XOs"/>
-                                <span class="text-sm font-medium">Prof. Marcus Thorne</span>
-                            </div>
-                        </div>
-                        <div class="col-span-2">
-                            <input class="w-full bg-red-100 border-red-200 rounded-lg px-3 py-1.5 text-xs font-bold text-red-600 border-none" type="text" value="Lab 102 - Turing"/>
-                        </div>
-                        <div class="col-span-1 flex justify-end">
-                            <button class="text-red-500">
-                                <span class="material-symbols-outlined">error</span>
-                            </button>
-                        </div>
-                    </div>
+                    <div class="px-6 py-5 text-sm text-slate-500" id="schedulePlaceholder">Loading schedules...</div>
                 </div>
             </div>
 
@@ -197,5 +155,118 @@
             </div>
         </div>
     </main>
+    <script>
+        const timetableBody = document.getElementById('timetableBody');
+        const placeholder = document.getElementById('schedulePlaceholder');
+        const optionSelector = document.getElementById('optionSelector');
+        const finalizeBtn = document.getElementById('finalizeBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const exportUrl = "{{ url_for('export') }}";
+
+        function toTimeRange(start, end) {
+            return `${start?.slice(0,5)} - ${end ? end.slice(0,5) : ''}`;
+        }
+
+        function clearTable() {
+            timetableBody.innerHTML = '';
+        }
+
+        function renderSchedules(grouped) {
+            clearTable();
+            if (!grouped || Object.keys(grouped).length === 0) {
+                timetableBody.innerHTML = '<div class="px-6 py-5 text-sm text-slate-500">No schedules yet. Generate first.</div>';
+                optionSelector.innerHTML = '<option value="" disabled selected>No options</option>';
+                return;
+            }
+
+            // Populate option dropdown
+            optionSelector.innerHTML = '';
+            Object.keys(grouped).sort().forEach(opt => {
+                const optEl = document.createElement('option');
+                optEl.value = opt;
+                optEl.textContent = `Option ${opt} (fitness ${grouped[opt].fitness})`;
+                optionSelector.appendChild(optEl);
+            });
+
+            const currentOpt = optionSelector.value || Object.keys(grouped)[0];
+            optionSelector.value = currentOpt;
+
+            const rows = grouped[currentOpt]?.schedule || [];
+            if (rows.length === 0) {
+                timetableBody.innerHTML = '<div class="px-6 py-5 text-sm text-slate-500">Empty option.</div>';
+                return;
+            }
+
+            rows.forEach((row) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'grid grid-cols-12 px-6 py-5 items-center hover:bg-slate-50 transition-colors';
+                wrapper.innerHTML = `
+                    <div class="col-span-2">
+                        <div class="text-sm font-semibold text-on-surface">${row.date}</div>
+                        <div class="text-xs text-on-surface-variant">${toTimeRange(row.start, row.end)}</div>
+                    </div>
+                    <div class="col-span-4 pr-8">
+                        <div class="text-sm font-bold text-primary">${row.subject_name || 'Subject ' + row.subject_id}</div>
+                    </div>
+                    <div class="col-span-3">
+                        <div class="text-sm font-medium text-on-surface">${row.faculty_name || 'Faculty ' + row.faculty_id}</div>
+                    </div>
+                    <div class="col-span-2">
+                        <div class="w-full bg-slate-100 rounded-lg px-3 py-1.5 text-xs font-medium border-none">${row.room_name || ('Room ' + row.room_id)}</div>
+                    </div>
+                    <div class="col-span-1 flex justify-end">
+                        <span class="material-symbols-outlined text-slate-300">drag_indicator</span>
+                    </div>
+                `;
+                timetableBody.appendChild(wrapper);
+            });
+        }
+
+        async function loadSchedules() {
+            try {
+                if (placeholder) placeholder.textContent = 'Loading schedules...';
+                const res = await fetch('/api/schedules');
+                const data = await res.json();
+                renderSchedules(data.data || {});
+            } catch (e) {
+                console.error(e);
+                timetableBody.innerHTML = '<div class="px-6 py-5 text-sm text-red-500">Failed to load schedules.</div>';
+            }
+        }
+
+        optionSelector.addEventListener('change', () => {
+            // reload to re-render with selected option
+            loadSchedules();
+        });
+
+        refreshBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            loadSchedules();
+        });
+
+        finalizeBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const opt = optionSelector.value;
+            if (!opt) return alert('Select an option first.');
+            try {
+                const res = await fetch('/api/finalize', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ option_no: Number(opt) })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.href = exportUrl;
+                } else {
+                    alert(data.message || 'Finalize failed');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Finalize failed');
+            }
+        });
+
+        loadSchedules();
+    </script>
 </body>
 </html>

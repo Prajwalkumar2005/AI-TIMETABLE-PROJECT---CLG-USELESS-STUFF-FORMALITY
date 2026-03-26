@@ -140,9 +140,17 @@
 
             // Real backend call: POST /api/generate
             try {
-                // Mock delay
-                await new Promise(r => setTimeout(r, 2000));
-                window.location.href = schedulesUrl;
+                const res = await fetch('/api/generate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(formData)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.href = schedulesUrl;
+                } else {
+                    throw new Error(data.message || 'Generation failed');
+                }
             } catch (error) {
                 console.error("Error triggering generation:", error);
                 document.getElementById('progressOverlay').classList.add('hidden');
