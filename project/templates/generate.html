@@ -113,6 +113,17 @@
                 </div>
 
                 <div id="results" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl"></div>
+
+                <div id="errorCard" class="hidden max-w-3xl bg-red-50 border border-red-200 text-red-800 rounded-xl p-5 shadow-sm">
+                    <div class="flex justify-between items-start gap-4">
+                        <div>
+                            <h3 class="font-headline font-bold text-lg mb-1">Generation failed</h3>
+                            <p id="errorMessage" class="text-sm mb-3"></p>
+                            <ul id="missingList" class="text-sm list-disc list-inside space-y-1"></ul>
+                        </div>
+                        <button id="gotoAdmin" type="button" class="shrink-0 px-4 py-2 bg-red-600 text-white rounded-full text-sm font-semibold hover:bg-red-700 transition-colors">Go to Admin Panel to Fix</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -126,7 +137,20 @@
 
     <script>
         const schedulesUrl = "{{ url_for('schedules') }}";
+        const adminUrl = "{{ url_for('admin') }}";
         const resultsContainer = document.getElementById('results');
+        const errorCard = document.getElementById('errorCard');
+        const errorMessage = document.getElementById('errorMessage');
+        const missingList = document.getElementById('missingList');
+        const gotoAdmin = document.getElementById('gotoAdmin');
+
+        function showToast(text, success = false) {
+            const toast = document.createElement('div');
+            toast.className = `fixed top-6 right-6 z-50 px-4 py-3 rounded-lg shadow-lg text-sm font-semibold text-white ${success ? 'bg-emerald-600' : 'bg-red-600'}`;
+            toast.textContent = text;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3200);
+        }
 
         function renderOptions(options) {
             resultsContainer.innerHTML = '';
@@ -147,9 +171,24 @@
             window.location.href = schedulesUrl;
         }
 
+        function showError(details) {
+            errorCard.classList.remove('hidden');
+            errorMessage.textContent = details.message || 'Generation failed. Missing data required to build schedules.';
+            missingList.innerHTML = '';
+            if (Array.isArray(details.missing) && details.missing.length) {
+                details.missing.forEach(id => {
+                    const li = document.createElement('li');
+                    li.textContent = `Subject ID ${id} is missing faculty/class/student mapping`;
+                    missingList.appendChild(li);
+                });
+            }
+            showToast('Generation failed. Please fix mappings.', false);
+        }
+
         document.getElementById('generateForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             document.getElementById('progressOverlay').classList.remove('hidden');
+            errorCard.classList.add('hidden');
             
             // Collect form data
             const formData = {
@@ -168,16 +207,28 @@
                     body: JSON.stringify(formData)
                 });
                 const data = await res.json();
-                if (!data.success) throw new Error(data.message || 'Generation failed');
+                if (!data.success) {
+                    // Try to parse missing subject IDs from message if provided
+                    const missing = data.message && data.message.match(/\d+/g);
+                    throw { message: data.message || 'Generation failed', missing };
+                }
                 // Show options briefly and persist for schedules page
                 renderOptions(data.options || []);
                 localStorage.setItem('gaOptions', JSON.stringify(data.options || []));
+                showToast('Generated 3 schedule options', true);
                 setTimeout(() => { window.location.href = schedulesUrl; }, 800);
             } catch (error) {
                 console.error("Error triggering generation:", error);
                 document.getElementById('progressOverlay').classList.add('hidden');
-                alert("Generation failed. Check console for details.");
+                showError({
+                    message: error.message || 'Generation failed. Missing mappings or data.',
+                    missing: error.missing
+                });
             }
+        });
+
+        gotoAdmin.addEventListener('click', () => {
+            window.location.href = adminUrl;
         });
     </script>
 </body>
