@@ -1,6 +1,8 @@
 flask
+flask-cors
 mysql-connector-python
 pandas
+numpy
 openpyxl
 jinja2
 python-dotenv

@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS timetable_db;
-USE timetable_db;
+CREATE DATABASE IF NOT EXISTS timetable_ai;
+USE timetable_ai;
 
 CREATE TABLE IF NOT EXISTS faculty (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -55,6 +55,19 @@ CREATE TABLE IF NOT EXISTS final_schedule (
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
     room_id INT NOT NULL,
+    FOREIGN KEY (subject_id) REFERENCES subjects(id),
+    FOREIGN KEY (room_id) REFERENCES rooms(id)
+);
+
+-- Simple view-like table to satisfy "schedules" naming if needed by tools
+CREATE TABLE IF NOT EXISTS schedules (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    subject_id INT NOT NULL,
+    exam_date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    room_id INT NOT NULL,
+    option_no INT DEFAULT 1,
     FOREIGN KEY (subject_id) REFERENCES subjects(id),
     FOREIGN KEY (room_id) REFERENCES rooms(id)
 );

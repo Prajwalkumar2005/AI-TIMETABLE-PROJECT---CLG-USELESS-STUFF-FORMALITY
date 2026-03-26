@@ -6,10 +6,10 @@ class Database:
     def __init__(self):
         # Configuration - move to environment variables in production
         self.config = {
-            'host': 'localhost',
-            'user': 'root',
-            'password': '', # Assumed empty based on some local setups, but please modify
-            'database': 'timetable_db'
+            'host': os.getenv('DB_HOST', 'localhost'),
+            'user': os.getenv('DB_USER', 'root'),
+            'password': os.getenv('DB_PASSWORD', ''), # set DB_PASSWORD env for safety
+            'database': os.getenv('DB_NAME', 'timetable_ai')
         }
 
     def get_connection(self):

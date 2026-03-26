@@ -1,9 +1,11 @@
 from flask import Flask, render_template, redirect, url_for, session, request
-from routes.api import api_bp
+from flask_cors import CORS
+from routes.api import api_bp, generate_timetable
 import os
 
 app = Flask(__name__)
 app.secret_key = 'ScholarPrism_2024' # Change this for production
+CORS(app)
 
 # Register Blueprints
 app.register_blueprint(api_bp, url_prefix='/api')
@@ -58,6 +60,12 @@ def export():
 def settings():
     if 'user' not in session: return redirect(url_for('login'))
     return render_template('settings.html')
+
+# Alias route requested: POST /generate_api
+@app.route('/generate_api', methods=['POST'])
+def generate_api():
+    # Reuse the blueprint handler so logic stays in one place
+    return generate_timetable()
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
