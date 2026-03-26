@@ -112,6 +112,8 @@
                 </div>
             </div>
 
+            <div id="optionsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"></div>
+
             <!-- Main Timetable Grid -->
             <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
                 <div class="grid grid-cols-12 bg-slate-50 border-b px-6 py-4">
@@ -161,7 +163,9 @@
         const optionSelector = document.getElementById('optionSelector');
         const finalizeBtn = document.getElementById('finalizeBtn');
         const refreshBtn = document.getElementById('refreshBtn');
+        const optionsContainer = document.getElementById('optionsContainer');
         const exportUrl = "{{ url_for('export') }}";
+        let cachedOptions = {};
 
         function toTimeRange(start, end) {
             return `${start?.slice(0,5)} - ${end ? end.slice(0,5) : ''}`;
@@ -169,6 +173,29 @@
 
         function clearTable() {
             timetableBody.innerHTML = '';
+        }
+
+        function renderOptionCards(grouped) {
+            optionsContainer.innerHTML = '';
+            const optionNos = Object.keys(grouped).sort();
+            if (optionNos.length === 0) {
+                optionsContainer.innerHTML = '<div class="text-sm text-slate-500">No options yet.</div>';
+                return;
+            }
+            optionNos.forEach(opt => {
+                const card = document.createElement('div');
+                card.className = 'border rounded-lg p-4 bg-white shadow-sm';
+                const fitness = grouped[opt].fitness;
+                card.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-headline font-bold text-lg">Option ${opt}</h3>
+                        <span class="text-xs font-semibold text-primary">Fitness: ${fitness ?? 'N/A'}</span>
+                    </div>
+                    <pre class="bg-slate-50 p-2 rounded text-[11px] overflow-auto max-h-40">${JSON.stringify(grouped[opt].schedule, null, 2)}</pre>
+                    <button class="mt-3 text-sm font-semibold text-primary underline" onclick="selectSchedule(${opt})">Select</button>
+                `;
+                optionsContainer.appendChild(card);
+            });
         }
 
         function renderSchedules(grouped) {
@@ -227,7 +254,9 @@
                 if (placeholder) placeholder.textContent = 'Loading schedules...';
                 const res = await fetch('/api/schedules');
                 const data = await res.json();
-                renderSchedules(data.data || {});
+                cachedOptions = data.data || {};
+                renderOptionCards(cachedOptions);
+                renderSchedules(cachedOptions);
             } catch (e) {
                 console.error(e);
                 timetableBody.innerHTML = '<div class="px-6 py-5 text-sm text-red-500">Failed to load schedules.</div>';
@@ -244,12 +273,19 @@
             loadSchedules();
         });
 
+        async function selectSchedule(opt) {
+            optionSelector.value = opt;
+            renderSchedules(cachedOptions);
+        }
+
+        window.selectSchedule = selectSchedule;
+
         finalizeBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             const opt = optionSelector.value;
             if (!opt) return alert('Select an option first.');
             try {
-                const res = await fetch('/api/finalize', {
+                const res = await fetch('/save_schedule', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ option_no: Number(opt) })
@@ -258,11 +294,11 @@
                 if (data.success) {
                     window.location.href = exportUrl;
                 } else {
-                    alert(data.message || 'Finalize failed');
+                    alert(data.message || 'Save failed');
                 }
             } catch (err) {
                 console.error(err);
-                alert('Finalize failed');
+                alert('Save failed');
             }
         });
 

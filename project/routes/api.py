@@ -6,22 +6,26 @@ import random
 
 api_bp = Blueprint('api', __name__)
 
-@api_bp.route('/generate', methods=['POST'])
-def generate_timetable():
+def generate_multiple_schedules():
+    """
+    Run GA and persist top 3 options to schedule_options.
+    Returns the in-memory options for immediate UI display.
+    """
     # 1. Fetch data from DB
     faculty = db.fetch_all("SELECT * FROM faculty")
     rooms = db.fetch_all("SELECT * FROM rooms")
     subjects = db.fetch_all("SELECT * FROM subjects")
     classes = db.fetch_all("SELECT * FROM classes")
     
+    if not (faculty and rooms and subjects and classes):
+        return {"success": False, "message": "Missing seed data in DB"}, []
+    
     # Map them for GA
     rooms_data = {r['id']: {'type': r['type'], 'capacity': r['capacity']} for r in rooms}
     
-    # 2. Mock some relationships for this example
-    # (In a real app, map subject to faculty and classes)
+    # Mock relationships (replace with real mapping later)
     subjects_data = {}
     for sub in subjects:
-        # Just random assignment for mock purposes, in production logic would exist
         subjects_data[sub['id']] = {
             'type': sub['type'],
             'faculty_id': random.choice([f['id'] for f in faculty]),
@@ -34,25 +38,48 @@ def generate_timetable():
     # 3. Create GA instance
     ga = GeneticAlgorithm(subjects_data, rooms_data, {}, dates_available, time_slots)
     
-    # 4. Run GA
+    # 4. Run GA -> always returns top 3
     top_3 = ga.run()
     
     # 5. Clear old options (option_no 1-3)
     db.execute_query("DELETE FROM schedule_options")
     
-    # 6. Save new options to DB
+    # 6. Save new options to DB and collect serializable response
+    options_payload = []
     for option_idx, option in enumerate(top_3):
+        serial_schedule = []
         for gene in option['schedule']:
+            serial_schedule.append({
+                'subject_id': gene['subject_id'],
+                'faculty_id': gene['faculty_id'],
+                'division_id': gene['division_id'],
+                'exam_date': gene['exam_date'].isoformat() if hasattr(gene['exam_date'], 'isoformat') else str(gene['exam_date']),
+                'start_time': str(gene['start_time']),
+                'end_time': str(gene['end_time']),
+                'room_id': gene['room_id']
+            })
             db.execute_query("""
                 INSERT INTO schedule_options (option_no, subject_id, exam_date, start_time, end_time, room_id, fitness_score)
                 VALUES (%s, %s, %s, %s, %s, %s, %s)
             """, (option_idx+1, gene['subject_id'], gene['exam_date'], gene['start_time'], gene['end_time'], gene['room_id'], option['fitness']))
-            
+        options_payload.append({
+            "option_no": option_idx+1,
+            "fitness": option['fitness'],
+            "schedule": serial_schedule
+        })
+    
+    return {"success": True, "message": "Top 3 schedules generated and saved."}, options_payload
+
+
+@api_bp.route('/generate', methods=['POST'])
+def generate_timetable():
+    meta, options = generate_multiple_schedules()
+    status_code = 200 if meta.get("success") else 400
     return jsonify({
-        "success": True, 
-        "message": "Top 3 schedules generated and saved.", 
-        "options": [o['fitness'] for o in top_3]
-    })
+        "success": meta.get("success", False), 
+        "message": meta.get("message", ""),
+        "options": options
+    }), status_code
 
 @api_bp.route('/schedules', methods=['GET'])
 def get_schedules():
@@ -87,6 +114,31 @@ def get_schedules():
             'room_name': r.get('room_name')
         })
     return jsonify({"success": True, "data": grouped})
+
+@api_bp.route('/save_schedule', methods=['POST'])
+def save_schedule():
+    option_no = request.json.get('option_no')
+    if not option_no:
+        return jsonify({"success": False, "message": "Option number missing"}), 400
+    
+    # Save into final_schedule and also into schedules table for history
+    options = db.fetch_all("SELECT * FROM schedule_options WHERE option_no = %s", (option_no,))
+    if not options:
+        return jsonify({"success": False, "message": "Option not found"}), 404
+    
+    db.execute_query("DELETE FROM final_schedule")
+    db.execute_query("DELETE FROM schedules")
+    for r in options:
+        db.execute_query("""
+            INSERT INTO final_schedule (subject_id, exam_date, start_time, end_time, room_id)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (r['subject_id'], r['exam_date'], r['start_time'], r['end_time'], r['room_id']))
+        db.execute_query("""
+            INSERT INTO schedules (subject_id, exam_date, start_time, end_time, room_id, option_no)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """, (r['subject_id'], r['exam_date'], r['start_time'], r['end_time'], r['room_id'], option_no))
+        
+    return jsonify({"success": True, "status": "saved", "message": f"Schedule Option {option_no} saved."})
 
 @api_bp.route('/finalize', methods=['POST'])
 def finalize_schedule():

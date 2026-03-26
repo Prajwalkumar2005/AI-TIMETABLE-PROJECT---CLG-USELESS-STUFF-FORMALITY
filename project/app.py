@@ -1,6 +1,6 @@
 from flask import Flask, render_template, redirect, url_for, session, request
 from flask_cors import CORS
-from routes.api import api_bp, generate_timetable
+from routes.api import api_bp, generate_timetable, save_schedule
 import os
 
 app = Flask(__name__)
@@ -66,6 +66,11 @@ def settings():
 def generate_api():
     # Reuse the blueprint handler so logic stays in one place
     return generate_timetable()
+
+# Alias for save schedule at root level if frontend calls /save_schedule
+@app.route('/save_schedule', methods=['POST'])
+def save_schedule_root():
+    return save_schedule()
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
