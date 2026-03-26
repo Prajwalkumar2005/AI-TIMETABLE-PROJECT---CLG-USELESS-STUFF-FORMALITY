@@ -59,30 +59,72 @@ def parse_date_range(date_range_str):
     return days
 
 
-def build_subject_map(subjects, faculty_map, class_map, student_counts):
+def build_subject_map(subjects, faculty_map, class_map, student_counts, auto_fix=False, faculty_lookup=None, classes=None, default_dept=None):
     """
-    Returns {subject_id: {...}} using explicit mappings.
+    Returns {subject_id: {...}} using explicit mappings, with optional auto-fix.
     faculty_map: {subject_id: faculty_id}
     class_map: {subject_id: class_id}
     student_counts: {class_id: student_count}
+    auto_fix: if True, create fallback mappings
     """
     subjects_map = {}
     missing_links = []
+    fixes = []
+
+    # helper to pick faculty from same department
+    def pick_faculty_from_dept(dept):
+        if not faculty_lookup: return None
+        if dept and dept in faculty_lookup and faculty_lookup[dept]:
+            return random.choice(faculty_lookup[dept])
+        # fallback: any available faculty
+        flat = [f for arr in faculty_lookup.values() for f in arr]
+        return random.choice(flat) if flat else None
+
+    # helper to pick class from same dept
+    def pick_class(dept):
+        if not classes: return None
+        if dept:
+            same = [c for c in classes if c['department'] == dept]
+            if same: return random.choice(same)
+        return classes[0] if classes else None
+
+    # average students for fallback
+    avg_students = 0
+    if student_counts:
+        avg_students = sum(student_counts.values()) // len(student_counts)
+
     for sub in subjects:
         sid = sub['id']
         fac_id = faculty_map.get(sid)
         cid = class_map.get(sid)
+        if (fac_id is None or cid is None) and not auto_fix:
+            missing_links.append(sid)
+            continue
+        if auto_fix:
+            # Faculty fallback
+            if fac_id is None:
+                fac_id = pick_faculty_from_dept(default_dept)
+                if fac_id: fixes.append(f"Subject {sid}: assigned fallback faculty {fac_id}")
+            # Class fallback
+            if cid is None:
+                chosen_class = pick_class(default_dept)
+                if chosen_class:
+                    cid = chosen_class['id']
+                    fixes.append(f"Subject {sid}: linked to class {cid}")
         if fac_id is None or cid is None:
             missing_links.append(sid)
             continue
+        student_count = student_counts.get(cid, avg_students)
+        if student_count == 0 and avg_students > 0:
+            student_count = avg_students
         subjects_map[sid] = {
             'type': sub['type'],
             'duration_minutes': sub.get('duration_minutes', 180) or 180,
             'faculty_id': fac_id,
             'division_id': cid,
-            'students': student_counts.get(cid, 0)
+            'students': student_count
         }
-    return subjects_map, missing_links
+    return subjects_map, missing_links, fixes
 
 
 def generate_multiple_schedules(payload):
@@ -115,10 +157,27 @@ def generate_multiple_schedules(payload):
     faculty_map = {row['subject_id']: row['faculty_id'] for row in subj_faculty_rows}
     class_map = {row['subject_id']: row['class_id'] for row in subj_class_rows}
     student_counts = {row['class_id']: row['student_count'] for row in class_students_rows}
+    faculty_lookup = {}
+    for f in faculty:
+        faculty_lookup.setdefault(f['department'], []).append(f['id'])
 
-    subjects_data, missing_links = build_subject_map(subjects, faculty_map, class_map, student_counts)
-    if missing_links:
+    subjects_data, missing_links, fixes = build_subject_map(
+        subjects,
+        faculty_map,
+        class_map,
+        student_counts,
+        auto_fix=payload.get('auto_fix', False),
+        faculty_lookup=faculty_lookup,
+        classes=classes,
+        default_dept=payload.get('department')
+    )
+    auto_fix_used = payload.get('auto_fix', False)
+
+    if missing_links and not auto_fix_used:
         return {"success": False, "message": f"Missing mappings for subjects: {missing_links}"}, []
+    if missing_links and auto_fix_used:
+        # could not fix everything
+        return {"success": False, "message": f"Auto-fix failed; remaining unmapped subjects: {missing_links}"}, []
 
     ga = GeneticAlgorithm(subjects_data, rooms_data, faculty_prefs, dates_available, TIME_SLOTS)
 
@@ -151,7 +210,11 @@ def generate_multiple_schedules(payload):
             "schedule": serial_schedule
         })
 
-    return {"success": True, "message": "Top 3 schedules generated and saved."}, options_payload
+    warning = None
+    if auto_fix_used:
+        warning = "Auto-fix used (may not be optimal). Applied fixes: " + "; ".join(fixes) if fixes else "Auto-fix used (may not be optimal)."
+
+    return {"success": True, "message": "Top 3 schedules generated and saved.", "warning": warning}, options_payload
 
 
 @api_bp.route('/generate', methods=['POST'])

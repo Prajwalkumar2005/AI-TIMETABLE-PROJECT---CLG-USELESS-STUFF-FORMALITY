@@ -143,16 +143,22 @@
         const errorMessage = document.getElementById('errorMessage');
         const missingList = document.getElementById('missingList');
         const gotoAdmin = document.getElementById('gotoAdmin');
+        let lastFormData = null;
 
-        function showToast(text, success = false) {
+        function showToast(text, variant = 'success') {
+            const colors = {
+                success: 'bg-emerald-600',
+                error: 'bg-red-600',
+                warn: 'bg-amber-500'
+            };
             const toast = document.createElement('div');
-            toast.className = `fixed top-6 right-6 z-50 px-4 py-3 rounded-lg shadow-lg text-sm font-semibold text-white ${success ? 'bg-emerald-600' : 'bg-red-600'}`;
+            toast.className = `fixed top-6 right-6 z-50 px-4 py-3 rounded-lg shadow-lg text-sm font-semibold text-white ${colors[variant] || colors.success}`;
             toast.textContent = text;
             document.body.appendChild(toast);
             setTimeout(() => toast.remove(), 3200);
         }
 
-        function renderOptions(options) {
+        function renderOptions(options, warning) {
             resultsContainer.innerHTML = '';
             options.forEach((schedule, index) => {
                 const card = document.createElement('div');
@@ -164,6 +170,12 @@
                 `;
                 resultsContainer.appendChild(card);
             });
+            if (warning) {
+                const warn = document.createElement('div');
+                warn.className = "col-span-full bg-amber-50 text-amber-800 border border-amber-200 rounded-lg p-3 text-sm";
+                warn.textContent = warning;
+                resultsContainer.appendChild(warn);
+            }
         }
 
         async function selectSchedule(optionNo) {
@@ -171,7 +183,7 @@
             window.location.href = schedulesUrl;
         }
 
-        function showError(details) {
+        function showError(details, canAutoFix = false) {
             errorCard.classList.remove('hidden');
             errorMessage.textContent = details.message || 'Generation failed. Missing data required to build schedules.';
             missingList.innerHTML = '';
@@ -182,24 +194,30 @@
                     missingList.appendChild(li);
                 });
             }
-            showToast('Generation failed. Please fix mappings.', false);
+            showToast('Generation failed. Please fix mappings.', 'error');
+            if (canAutoFix) {
+                gotoAdmin.textContent = "Auto-Fix Missing Data";
+                gotoAdmin.dataset.mode = "auto";
+            } else {
+                gotoAdmin.textContent = "Go to Admin Panel to Fix";
+                gotoAdmin.dataset.mode = "admin";
+            }
         }
 
-        document.getElementById('generateForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+        async function runGeneration(autoFix = false) {
             document.getElementById('progressOverlay').classList.remove('hidden');
             errorCard.classList.add('hidden');
-            
-            // Collect form data
-            const formData = {
+
+            const formData = lastFormData || {
                 department: document.getElementById('department').value,
                 year: document.getElementById('year').value,
                 division: document.getElementById('division').value,
                 examTypes: Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(c => c.value),
                 dateRange: document.getElementById('dateRange').value
             };
+            lastFormData = formData;
+            formData.auto_fix = autoFix;
 
-            // Real backend call: POST /api/generate
             try {
                 const res = await fetch('/generate_api', {
                     method: 'POST',
@@ -208,14 +226,16 @@
                 });
                 const data = await res.json();
                 if (!data.success) {
-                    // Try to parse missing subject IDs from message if provided
                     const missing = data.message && data.message.match(/\d+/g);
                     throw { message: data.message || 'Generation failed', missing };
                 }
-                // Show options briefly and persist for schedules page
-                renderOptions(data.options || []);
+                renderOptions(data.options || [], data.warning);
                 localStorage.setItem('gaOptions', JSON.stringify(data.options || []));
-                showToast('Generated 3 schedule options', true);
+                if (data.warning) {
+                    showToast(data.warning, 'warn');
+                } else {
+                    showToast('Generated 3 schedule options', 'success');
+                }
                 setTimeout(() => { window.location.href = schedulesUrl; }, 800);
             } catch (error) {
                 console.error("Error triggering generation:", error);
@@ -223,12 +243,21 @@
                 showError({
                     message: error.message || 'Generation failed. Missing mappings or data.',
                     missing: error.missing
-                });
+                }, true);
             }
+        }
+
+        document.getElementById('generateForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            runGeneration(false);
         });
 
         gotoAdmin.addEventListener('click', () => {
-            window.location.href = adminUrl;
+            if (gotoAdmin.dataset.mode === 'auto') {
+                runGeneration(true);
+            } else {
+                window.location.href = adminUrl;
+            }
         });
     </script>
 </body>
