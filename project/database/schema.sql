@@ -95,6 +95,26 @@ CREATE TABLE IF NOT EXISTS subject_class (
     FOREIGN KEY (class_id) REFERENCES classes(id)
 );
 
+-- Seed mappings (idempotent)
+INSERT INTO class_students (class_id, student_count)
+SELECT 1, 60 WHERE NOT EXISTS (SELECT 1 FROM class_students WHERE class_id = 1);
+INSERT INTO class_students (class_id, student_count)
+SELECT 2, 65 WHERE NOT EXISTS (SELECT 1 FROM class_students WHERE class_id = 2);
+
+INSERT INTO subject_faculty (subject_id, faculty_id)
+SELECT 1, 1 WHERE NOT EXISTS (SELECT 1 FROM subject_faculty WHERE subject_id = 1);
+INSERT INTO subject_faculty (subject_id, faculty_id)
+SELECT 2, 2 WHERE NOT EXISTS (SELECT 1 FROM subject_faculty WHERE subject_id = 2);
+INSERT INTO subject_faculty (subject_id, faculty_id)
+SELECT 3, 3 WHERE NOT EXISTS (SELECT 1 FROM subject_faculty WHERE subject_id = 3);
+
+INSERT INTO subject_class (subject_id, class_id)
+SELECT 1, 1 WHERE NOT EXISTS (SELECT 1 FROM subject_class WHERE subject_id = 1);
+INSERT INTO subject_class (subject_id, class_id)
+SELECT 2, 1 WHERE NOT EXISTS (SELECT 1 FROM subject_class WHERE subject_id = 2);
+INSERT INTO subject_class (subject_id, class_id)
+SELECT 3, 2 WHERE NOT EXISTS (SELECT 1 FROM subject_class WHERE subject_id = 3);
+
 -- Seed Data (Optional but helpful for testing)
 INSERT INTO faculty (name, department) VALUES ('Dr. Julian Vance', 'CSE'), ('Dr. Sarah Jenkins', 'CSE'), ('Prof. Marcus Thorne', 'CSE');
 INSERT INTO rooms (name, type, capacity) VALUES ('Hall 4C', 'CLASSROOM', 60), ('Lab 102', 'LAB', 30), ('Auditorium B', 'CLASSROOM', 200);
