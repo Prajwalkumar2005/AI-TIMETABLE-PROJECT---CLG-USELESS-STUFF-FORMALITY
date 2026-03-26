@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Scholar Prism | Settings</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3525cd",
+                        "secondary": "#712ae2",
+                        "surface": "#f7f9fb",
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface font-body text-on-surface">
+    <!-- Top Navigation -->
+    <header class="fixed top-0 w-full z-40 bg-white/60 backdrop-blur-xl shadow-sm border-b">
+        <div class="flex items-center justify-between px-6 h-20 w-full max-w-7xl mx-auto">
+            <div class="flex items-center gap-4">
+                <a href="{{ url_for('dashboard') }}" class="material-symbols-outlined text-indigo-600">arrow_back</a>
+                <h1 class="font-headline font-black text-indigo-700 tracking-tighter text-2xl">Scholar Prism</h1>
+            </div>
+        </div>
+    </header>
+
+    <main class="pt-32 pb-20 px-6 max-w-4xl mx-auto">
+        <header class="mb-12">
+            <h2 class="font-headline text-5xl font-extrabold tracking-tight text-on-surface mb-2">System Preferences</h2>
+            <p class="text-on-surface-variant text-lg">Manage your academic curator profile and global constraints.</p>
+        </header>
+
+        <section class="space-y-8">
+            <!-- Profile Section -->
+            <div class="bg-white rounded-lg p-8 shadow-sm border relative overflow-hidden">
+                <h3 class="font-headline text-2xl font-bold mb-8 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary">person</span>
+                    Profile Information
+                </h3>
+                <div class="flex flex-col md:flex-row gap-10 items-center">
+                    <div class="relative">
+                        <div class="w-32 h-32 rounded-3xl overflow-hidden border shadow-lg">
+                            <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7Q43MmP3dwO1utgn5vt52qsXTsX006UdHWK6yWWnVKAlNIiK_fDt2G8uOqPtjtREz5c8C086JTFhKuK4Bi9J5Hwy0SO9QEKnGLdk-LGs6X9hz3qk-kWIdb3z7IQ4RjQpy_Gg0jpNBX6fD-k9zaSSABKXRFBKctx_sr79mHNG8qnNPmmXYJNsIQPkbmrvwTiMtotMeXUwuV_dKTAU7dHnjxuu4NeenL8XBEEgaYT4pOXjZVXQrVq5Bi4oJWAqda0xSkSogL7_OSEM"/>
+                        </div>
+                    </div>
+                    <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">Full Name</label>
+                            <input class="w-full bg-slate-50 border-none rounded-md px-4 py-3 focus:ring-2 focus:ring-primary focus:bg-white transition-all" type="text" value="Dr. Elena Sterling"/>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold uppercase tracking-wider text-slate-400">Academic Role</label>
+                            <input class="w-full bg-slate-50 border-none rounded-md px-4 py-3 focus:ring-2 focus:ring-primary focus:bg-white transition-all" type="text" value="Senior Examinations Officer"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GA Parameters Settings -->
+            <div class="bg-indigo-900 text-white rounded-lg p-8 shadow-xl">
+                <h3 class="font-headline text-2xl font-bold mb-8 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-indigo-300">psychology</span>
+                    AI Engine Parameters
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium opacity-80">Population Size</span>
+                            <span class="font-bold">50</span>
+                        </div>
+                        <input type="range" class="w-full h-2 bg-white/20 rounded-full appearance-none accent-white" value="50" min="10" max="200"/>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium opacity-80">Generations</span>
+                            <span class="font-bold">100</span>
+                        </div>
+                        <input type="range" class="w-full h-2 bg-white/20 rounded-full appearance-none accent-white" value="100" min="50" max="500"/>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium opacity-80">Mutation Rate</span>
+                            <span class="font-bold">0.3</span>
+                        </div>
+                        <input type="range" class="w-full h-2 bg-white/20 rounded-full appearance-none accent-white" value="30" min="5" max="80"/>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm font-medium opacity-80">Crossover Rate</span>
+                            <span class="font-bold">0.8</span>
+                        </div>
+                        <input type="range" class="w-full h-2 bg-white/20 rounded-full appearance-none accent-white" value="80" min="10" max="100"/>
+                    </div>
+                </div>
+                <div class="mt-10 pt-8 border-t border-white/10 flex justify-end">
+                    <button class="px-8 py-3 bg-white text-indigo-900 rounded-full font-bold shadow-lg hover:scale-105 transition-all">Update AI Logic</button>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Scholar Prism | Export Timetable</title>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3525cd",
+                        "secondary": "#712ae2",
+                        "surface": "#f7f9fb",
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface font-body text-on-surface antialiased">
+    <!-- Top Navigation -->
+    <header class="fixed top-0 w-full z-40 bg-white/60 backdrop-blur-xl shadow-sm border-b">
+        <div class="flex items-center justify-between px-6 h-20 w-full max-w-7xl mx-auto">
+            <div class="flex items-center gap-4">
+                <a href="{{ url_for('dashboard') }}" class="material-symbols-outlined text-indigo-600">arrow_back</a>
+                <h1 class="font-headline font-black text-indigo-700 tracking-tighter text-2xl">Scholar Prism</h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pt-28 pb-12 px-6 lg:pl-12 lg:pr-12 max-w-7xl mx-auto">
+        <!-- Hero Header -->
+        <section class="mb-12">
+            <h2 class="font-headline font-extrabold text-5xl md:text-6xl text-on-surface tracking-tight mb-4 max-w-2xl leading-tight">
+                Finalized <span class="text-primary italic">Intelligence.</span>
+            </h2>
+            <p class="font-body text-on-surface-variant text-lg max-w-xl">
+                Your optimized academic path is ready. Select your preferred medium for archival.
+            </p>
+        </section>
+
+        <!-- Export Options -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-16 max-w-4xl">
+            <!-- Excel Export Card -->
+            <div class="group relative bg-white rounded-lg p-8 flex flex-col items-center text-center transition-all hover:-translate-y-2 border shadow-sm">
+                <div class="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mb-6 text-emerald-600 group-hover:scale-110 transition-transform">
+                    <span class="material-symbols-outlined text-4xl">table_view</span>
+                </div>
+                <h3 class="font-headline text-xl font-bold mb-2">Export as Excel</h3>
+                <p class="text-sm text-on-surface-variant mb-8 px-4">Structured format optimized for calendar imports and spreadsheet manipulation.</p>
+                <button onclick="window.location.href='/api/export/excel'" class="mt-auto w-full py-4 bg-indigo-600 text-white rounded-full font-bold flex items-center justify-center gap-2 shadow-lg transition-all active:scale-95 duration-200">
+                    <span>Download .xlsx</span>
+                    <span class="material-symbols-outlined text-lg">download</span>
+                </button>
+            </div>
+            <!-- PDF Export Card -->
+            <div class="group relative bg-white rounded-lg p-8 flex flex-col items-center text-center transition-all hover:-translate-y-2 border shadow-sm">
+                <div class="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-6 text-primary group-hover:scale-110 transition-transform">
+                    <span class="material-symbols-outlined text-4xl">picture_as_pdf</span>
+                </div>
+                <h3 class="font-headline text-xl font-bold mb-2">Export as PDF</h3>
+                <p class="text-sm text-on-surface-variant mb-8 px-4">Standard academic format with high-fidelity vector graphics and print-ready margins.</p>
+                <button class="mt-auto w-full py-4 bg-indigo-600 text-white rounded-full font-bold flex items-center justify-center gap-2 shadow-lg transition-all active:scale-95 duration-200">
+                    <span>Download .pdf</span>
+                    <span class="material-symbols-outlined text-lg">download</span>
+                </button>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

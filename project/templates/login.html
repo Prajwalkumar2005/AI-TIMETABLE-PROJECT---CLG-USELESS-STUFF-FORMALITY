@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Scholar Prism | Login</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3525cd",
+                        "secondary": "#712ae2",
+                        "background": "#f7f9fb",
+                        "surface": "#f7f9fb",
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(40px);
+        }
+        .neon-glow {
+            box-shadow: 0 12px 48px rgba(79, 70, 229, 0.15);
+        }
+        .bg-mesh {
+            background-color: #F8FAFC;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(226, 223, 255, 1) 0, transparent 50%), 
+                radial-gradient(at 100% 100%, rgba(238, 242, 255, 1) 0, transparent 50%);
+        }
+    </style>
+</head>
+<body class="bg-mesh min-h-screen flex flex-col font-body">
+    <div class="flex-grow flex items-center justify-center px-6 py-12">
+        <div class="relative w-full max-w-[480px]">
+            <div class="glass-card relative z-10 p-8 md:p-12 rounded-lg shadow-xl border border-white/40">
+                <div class="flex flex-col items-center mb-10">
+                    <div class="flex items-center gap-3 mb-8">
+                        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg">
+                            <span class="material-symbols-outlined text-white text-3xl">auto_awesome</span>
+                        </div>
+                        <span class="font-headline font-black text-2xl tracking-tighter text-indigo-700">Scholar Prism</span>
+                    </div>
+                    <h1 class="font-headline font-extrabold text-4xl text-on-surface mb-3 tracking-tight">Welcome Back</h1>
+                    <p class="text-on-surface-variant text-center font-medium opacity-80">AI-Powered Exam Timetable Generator</p>
+                </div>
+                <form class="space-y-6" method="POST" action="{{ url_for('login') }}">
+                    <div class="space-y-2">
+                        <label class="font-headline font-bold text-sm text-on-surface-variant px-1 uppercase tracking-widest" for="email">Email Address</label>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <span class="material-symbols-outlined text-outline group-focus-within:text-primary transition-colors">mail</span>
+                            </div>
+                            <input class="w-full pl-12 pr-4 py-4 bg-slate-100 focus:bg-white border-none rounded-md transition-all focus:ring-2 focus:ring-primary/20 text-on-surface placeholder:text-outline-variant font-medium" id="email" name="email" placeholder="admin@university.edu" type="email" required/>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center px-1">
+                            <label class="font-headline font-bold text-sm text-on-surface-variant uppercase tracking-widest" for="password">Password</label>
+                            <a class="text-xs font-bold text-primary hover:text-secondary transition-colors" href="#">Forgot Password?</a>
+                        </div>
+                        <div class="relative group">
+                            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                <span class="material-symbols-outlined text-outline group-focus-within:text-primary transition-colors">lock</span>
+                            </div>
+                            <input class="w-full pl-12 pr-4 py-4 bg-slate-100 focus:bg-white border-none rounded-md transition-all focus:ring-2 focus:ring-primary/20 text-on-surface placeholder:text-outline-variant font-medium" id="password" name="password" placeholder="••••••••" type="password" required/>
+                        </div>
+                    </div>
+                    <div class="pt-2">
+                        <button class="w-full py-4 bg-gradient-to-r from-primary to-secondary text-white font-headline font-extrabold rounded-full neon-glow transition-all active:scale-[0.98] flex items-center justify-center gap-2 group" type="submit">
+                            <span>Sign In</span>
+                            <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                        </button>
+                    </div>
+                </form>
+                <div class="mt-10 pt-8 border-t border-slate-200/50 flex flex-col items-center gap-6">
+                    <p class="text-on-surface-variant font-medium text-sm">
+                        Don't have an account? 
+                        <a class="text-primary font-bold hover:underline" href="#">Sign up</a>
+                    </p>
+                </div>
+            </div>
+            <div class="mt-8 flex justify-between px-4">
+                <div class="flex gap-4">
+                    <a class="text-xs font-medium text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+                    <a class="text-xs font-medium text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a>
+                </div>
+                <p class="text-xs font-medium text-on-surface-variant opacity-60">© 2024 Scholar Prism AI</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Scholar Prism | Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3525cd",
+                        "secondary": "#712ae2",
+                        "surface": "#f7f9fb",
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                    },
+                },
+            },
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(20px);
+        }
+        .neon-glow {
+            box-shadow: 0 12px 48px rgba(79, 70, 229, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+    <!-- Top Navigation -->
+    <header class="fixed top-0 w-full z-40 bg-white/60 backdrop-blur-xl shadow-sm">
+        <div class="flex items-center justify-between px-6 h-20 w-full max-w-7xl mx-auto">
+            <div class="flex items-center gap-4">
+                <span class="material-symbols-outlined text-indigo-600">menu</span>
+                <h1 class="font-headline font-black text-indigo-700 tracking-tighter text-2xl">Scholar Prism</h1>
+            </div>
+            <div class="flex items-center gap-6">
+                <nav class="hidden md:flex gap-8 items-center">
+                    <a class="text-indigo-700 font-bold font-headline text-sm tracking-wide" href="{{ url_for('dashboard') }}">Dashboard</a>
+                    <a class="text-slate-500 hover:text-indigo-600 transition-all font-medium text-sm" href="{{ url_for('generate') }}">Generate</a>
+                    <a class="text-slate-500 hover:text-indigo-600 transition-all font-medium text-sm" href="{{ url_for('schedules') }}">Schedules</a>
+                </nav>
+                <div class="w-10 h-10 rounded-full bg-primary overflow-hidden border-2 border-white shadow-sm">
+                    <img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuApWcE402FevVsHVR8mVk0pWHXqM1MvgW_Xq7XEvtzMNwZZ0K5xgfvqwV2EuE37PyGDFijXmyqNlmKp1szjL0IF8b5pPDK79_IGQvhmu_rUHQ9uDi9_zpnAlYyca_aOe5bDf2Q9CFCqJiv3lZak1M0juy4Fw14ElLzWkV1OQBBfEf_Je2j31B9ArcUD1YliHG2nG_J3kT3CvZMqLrQsGEkRiux6A9d0kgcUrcXhT1V4jDtTQ6kiridt60bX9eB38TRLFeG54BhXYJs"/>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar Navigation -->
+    <aside class="hidden lg:flex fixed left-0 top-0 h-full flex flex-col py-8 w-72 bg-white border-r z-30 pt-24">
+        <nav class="flex flex-col gap-1 px-4">
+            <a class="flex items-center gap-4 py-3 px-6 bg-indigo-600 text-white rounded-full shadow-lg transition-transform" href="{{ url_for('dashboard') }}">
+                <span class="material-symbols-outlined">dashboard</span>
+                <span class="font-body text-sm font-medium">Dashboard</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-6 text-slate-600 hover:bg-slate-100 rounded-full transition-transform" href="{{ url_for('generate') }}">
+                <span class="material-symbols-outlined">auto_awesome</span>
+                <span class="font-body text-sm font-medium">Generate</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-6 text-slate-600 hover:bg-slate-100 rounded-full transition-transform" href="{{ url_for('schedules') }}">
+                <span class="material-symbols-outlined">calendar_month</span>
+                <span class="font-body text-sm font-medium">Schedules</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-6 text-slate-600 hover:bg-slate-100 rounded-full transition-transform" href="{{ url_for('admin') }}">
+                <span class="material-symbols-outlined">admin_panel_settings</span>
+                <span class="font-body text-sm font-medium">Admin</span>
+            </a>
+            <a class="flex items-center gap-4 py-3 px-6 text-slate-600 hover:bg-slate-100 rounded-full transition-transform" href="{{ url_for('settings') }}">
+                <span class="material-symbols-outlined">settings</span>
+                <span class="font-body text-sm font-medium">Settings</span>
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="pt-28 pb-12 px-6 lg:ml-72 min-h-screen">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
+                <div class="space-y-2">
+                    <h2 class="font-headline text-5xl font-extrabold text-on-surface tracking-tight leading-tight">Good Evening, Admin</h2>
+                    <p class="text-on-surface-variant text-lg font-medium opacity-70">Scholar Prism AI Control Center</p>
+                </div>
+                <button onclick="window.location.href='{{ url_for('generate') }}'" class="bg-gradient-to-br from-primary to-secondary text-white px-8 py-4 rounded-full font-headline font-bold text-sm flex items-center gap-3 transition-all shadow-lg neon-glow">
+                    <span class="material-symbols-outlined">auto_awesome</span>
+                    Generate New Timetable
+                </button>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                <div class="bg-white p-8 rounded-lg shadow-sm border hover:shadow-md transition-shadow">
+                    <div class="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center text-indigo-600 mb-6">
+                        <span class="material-symbols-outlined">school</span>
+                    </div>
+                    <p class="text-xs font-bold uppercase tracking-widest text-slate-400 mb-1">Total Exams</p>
+                    <p class="text-4xl font-headline font-extrabold text-indigo-900" id="totalExams">0</p>
+                </div>
+                <!-- Add other stats here -->
+            </div>
+
+            <!-- Recent Schedules Table -->
+            <div class="bg-white rounded-lg border shadow-sm overflow-hidden">
+                <div class="p-6 border-b">
+                    <h3 class="font-headline text-2xl font-bold">Recent Schedules</h3>
+                </div>
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="bg-slate-50">
+                            <th class="px-8 py-5 text-xs font-bold text-slate-400 uppercase tracking-widest">Schedule Name</th>
+                            <th class="px-8 py-5 text-xs font-bold text-slate-400 uppercase tracking-widest">Created Date</th>
+                            <th class="px-8 py-5 text-xs font-bold text-slate-400 uppercase tracking-widest">Status</th>
+                            <th class="px-8 py-5"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y" id="scheduleTableBody">
+                        <!-- Schedules will be loaded via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+    <script>
+        // Load stats and schedules from backend
+        async function loadDashboardData() {
+            try {
+                // Mocking data for now, real app would call /api/stats and /api/schedules
+                const schedules = [
+                    { id: 1, name: "Final Term - Fall 2023", date: "Oct 24, 2023", status: "Finalized" },
+                    { id: 2, name: "Midterms - Engineering", date: "Nov 02, 2023", status: "Draft" }
+                ];
+
+                const tbody = document.getElementById('scheduleTableBody');
+                tbody.innerHTML = schedules.map(s => `
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-8 py-6 font-bold text-indigo-900">${s.name}</td>
+                        <td class="px-8 py-6 text-sm text-slate-500">${s.date}</td>
+                        <td class="px-8 py-6">
+                            <span class="px-3 py-1 ${s.status === 'Finalized' ? 'bg-green-100 text-green-700' : 'bg-indigo-100 text-indigo-700'} rounded-full text-[10px] font-bold uppercase tracking-wider">${s.status}</span>
+                        </td>
+                        <td class="px-8 py-6 text-right">
+                            <button class="w-10 h-10 rounded-full hover:bg-white text-slate-400">
+                                <span class="material-symbols-outlined">more_horiz</span>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+                document.getElementById('totalExams').innerText = schedules.length * 12; // Just a mock
+            } catch (error) {
+                console.error("Error loading dashboard data:", error);
+            }
+        }
+        loadDashboardData();
+    </script>
+</body>
+</html>

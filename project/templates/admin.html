@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Scholar Prism | Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#3525cd",
+                        "secondary": "#712ae2",
+                        "surface": "#f7f9fb",
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                    },
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-surface font-body text-on-surface">
+    <!-- Top Navigation -->
+    <header class="fixed top-0 w-full z-40 bg-white/60 backdrop-blur-xl shadow-sm border-b">
+        <div class="flex items-center justify-between px-6 h-20 w-full max-w-7xl mx-auto">
+            <div class="flex items-center gap-4">
+                <a href="{{ url_for('dashboard') }}" class="material-symbols-outlined text-indigo-600">arrow_back</a>
+                <h1 class="font-headline font-black text-indigo-700 tracking-tighter text-2xl">Scholar Prism</h1>
+            </div>
+        </div>
+    </header>
+
+    <main class="pt-32 pb-20 px-6 max-w-6xl mx-auto">
+        <header class="mb-12">
+            <h2 class="font-headline text-5xl font-extrabold tracking-tight text-on-surface mb-2">Administrative Console</h2>
+            <p class="text-on-surface-variant text-lg">Manage university resources, faculty rosters, and structural constraints.</p>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white p-6 rounded-xl border shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                <div class="w-12 h-12 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 mb-4">
+                    <span class="material-symbols-outlined">groups</span>
+                </div>
+                <h3 class="font-headline font-bold text-xl mb-2">Faculty Roster</h3>
+                <p class="text-sm text-slate-500">Manage 120+ registered professors and their availability periods.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl border shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                <div class="w-12 h-12 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 mb-4">
+                    <span class="material-symbols-outlined">meeting_room</span>
+                </div>
+                <h3 class="font-headline font-bold text-xl mb-2">Room Inventory</h3>
+                <p class="text-sm text-slate-500">Configure 45+ examination halls and specialized laboratory spaces.</p>
+            </div>
+            <div class="bg-white p-6 rounded-xl border shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+                <div class="w-12 h-12 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 mb-4">
+                    <span class="material-symbols-outlined">menu_book</span>
+                </div>
+                <h3 class="font-headline font-bold text-xl mb-2">Subject Catalog</h3>
+                <p class="text-sm text-slate-500">Define theoretical and practical course requirements per department.</p>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
