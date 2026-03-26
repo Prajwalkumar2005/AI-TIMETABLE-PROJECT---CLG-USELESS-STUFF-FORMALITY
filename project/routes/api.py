@@ -7,7 +7,6 @@ import re
 
 api_bp = Blueprint('api', __name__)
 
-CLASS_SIZE_DEFAULT = 60
 TIME_SLOTS = ['09:00:00', '13:30:00', '16:30:00']
 
 def parse_date_range(date_range_str):
@@ -60,43 +59,30 @@ def parse_date_range(date_range_str):
     return days
 
 
-def build_subject_map(subjects, faculty, classes, payload):
+def build_subject_map(subjects, faculty_map, class_map, student_counts):
     """
-    Returns {subject_id: {...}} with assigned faculty_id, division_id, students, type, duration.
-    Prefers faculty from same department; prefers selected class (dept/year/division from payload).
+    Returns {subject_id: {...}} using explicit mappings.
+    faculty_map: {subject_id: faculty_id}
+    class_map: {subject_id: class_id}
+    student_counts: {class_id: student_count}
     """
-    dept = payload.get('department')
-    year = payload.get('year')
-    division = payload.get('division')
-
-    # Choose matching class id; fallback first
-    target_class = None
-    for c in classes:
-        if ((dept is None or c['department'] == dept) and
-            (year is None or str(c['year']) == str(year)) and
-            (division is None or c['division'] == division)):
-            target_class = c
-            break
-    if not target_class and classes:
-        target_class = classes[0]
-
-    # Faculty preference by department
-    def pick_faculty(subj_dept):
-        same_dept = [f for f in faculty if f['department'] == subj_dept]
-        if same_dept:
-            return random.choice(same_dept)['id']
-        return random.choice(faculty)['id']
-
     subjects_map = {}
+    missing_links = []
     for sub in subjects:
-        subjects_map[sub['id']] = {
+        sid = sub['id']
+        fac_id = faculty_map.get(sid)
+        cid = class_map.get(sid)
+        if fac_id is None or cid is None:
+            missing_links.append(sid)
+            continue
+        subjects_map[sid] = {
             'type': sub['type'],
             'duration_minutes': sub.get('duration_minutes', 180) or 180,
-            'faculty_id': pick_faculty(dept or sub.get('department', '')),
-            'division_id': target_class['id'] if target_class else classes[0]['id'],
-            'students': CLASS_SIZE_DEFAULT
+            'faculty_id': fac_id,
+            'division_id': cid,
+            'students': student_counts.get(cid, 0)
         }
-    return subjects_map
+    return subjects_map, missing_links
 
 
 def generate_multiple_schedules(payload):
@@ -110,9 +96,14 @@ def generate_multiple_schedules(payload):
     subjects = db.fetch_all("SELECT * FROM subjects")
     classes = db.fetch_all("SELECT * FROM classes")
     prefs_rows = db.fetch_all("SELECT faculty_id, preferred_date FROM faculty_preferences")
+    subj_faculty_rows = db.fetch_all("SELECT subject_id, faculty_id FROM subject_faculty")
+    subj_class_rows = db.fetch_all("SELECT subject_id, class_id FROM subject_class")
+    class_students_rows = db.fetch_all("SELECT class_id, student_count FROM class_students")
 
     if not (faculty and rooms and subjects and classes):
         return {"success": False, "message": "Missing seed data in DB"}, []
+    if not (subj_faculty_rows and subj_class_rows and class_students_rows):
+        return {"success": False, "message": "Missing mapping data (subject_faculty / subject_class / class_students)."}, []
 
     rooms_data = {r['id']: {'type': r['type'], 'capacity': r['capacity']} for r in rooms}
     faculty_prefs = {}
@@ -120,7 +111,14 @@ def generate_multiple_schedules(payload):
         faculty_prefs.setdefault(row['faculty_id'], set()).add(row['preferred_date'])
 
     dates_available = parse_date_range(payload.get('dateRange'))
-    subjects_data = build_subject_map(subjects, faculty, classes, payload)
+
+    faculty_map = {row['subject_id']: row['faculty_id'] for row in subj_faculty_rows}
+    class_map = {row['subject_id']: row['class_id'] for row in subj_class_rows}
+    student_counts = {row['class_id']: row['student_count'] for row in class_students_rows}
+
+    subjects_data, missing_links = build_subject_map(subjects, faculty_map, class_map, student_counts)
+    if missing_links:
+        return {"success": False, "message": f"Missing mappings for subjects: {missing_links}"}, []
 
     ga = GeneticAlgorithm(subjects_data, rooms_data, faculty_prefs, dates_available, TIME_SLOTS)
 

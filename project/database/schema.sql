@@ -72,6 +72,29 @@ CREATE TABLE IF NOT EXISTS schedules (
     FOREIGN KEY (room_id) REFERENCES rooms(id)
 );
 
+-- Student counts per class/division
+CREATE TABLE IF NOT EXISTS class_students (
+    class_id INT NOT NULL,
+    student_count INT NOT NULL DEFAULT 0,
+    FOREIGN KEY (class_id) REFERENCES classes(id)
+);
+
+-- Explicit subject-to-faculty mapping
+CREATE TABLE IF NOT EXISTS subject_faculty (
+    subject_id INT NOT NULL,
+    faculty_id INT NOT NULL,
+    FOREIGN KEY (subject_id) REFERENCES subjects(id),
+    FOREIGN KEY (faculty_id) REFERENCES faculty(id)
+);
+
+-- Explicit subject-to-class/division mapping
+CREATE TABLE IF NOT EXISTS subject_class (
+    subject_id INT NOT NULL,
+    class_id INT NOT NULL,
+    FOREIGN KEY (subject_id) REFERENCES subjects(id),
+    FOREIGN KEY (class_id) REFERENCES classes(id)
+);
+
 -- Seed Data (Optional but helpful for testing)
 INSERT INTO faculty (name, department) VALUES ('Dr. Julian Vance', 'CSE'), ('Dr. Sarah Jenkins', 'CSE'), ('Prof. Marcus Thorne', 'CSE');
 INSERT INTO rooms (name, type, capacity) VALUES ('Hall 4C', 'CLASSROOM', 60), ('Lab 102', 'LAB', 30), ('Auditorium B', 'CLASSROOM', 200);
