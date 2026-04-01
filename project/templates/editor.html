@@ -32,6 +32,12 @@
             background: rgba(255, 255, 255, 0.6);
             backdrop-filter: blur(20px);
         }
+        @media print {
+            body * { visibility: hidden; }
+            #timetableGrid, #timetableGrid * { visibility: visible; }
+            #timetableGrid { position: absolute; left: 0; top: 0; width: 100%; }
+            #aiInsightPanel, #adminControls, #optionsContainer, .fixed { display: none !important; }
+        }
     </style>
 </head>
 <body class="bg-surface font-body text-on-surface antialiased">
@@ -88,11 +94,11 @@
 
         <!-- Canvas Content -->
         <div class="pt-28 pb-12 px-8 max-w-7xl mx-auto">
-            <div class="flex flex-col md:flex-row justify-between items-end gap-6 mb-12">
-                <div class="max-w-2xl">
-                    <p class="font-body text-primary font-bold tracking-[0.2em] uppercase text-xs mb-3">Scheduling System v2.4</p>
-                    <h2 class="font-headline text-4xl font-extrabold text-on-surface tracking-tight leading-tight">Refine and validate your academic roadmap.</h2>
-                    <p class="mt-4 text-on-surface-variant leading-relaxed">The AI has generated an optimized path. Review conflicts, adjust room assignments, and finalize the curriculum with one click.</p>
+            <div class="flex flex-col md:flex-row justify-between items-end gap-6 mb-8">
+                <div class="max-w-xl">
+                    <p class="font-body text-primary font-bold tracking-[0.2em] uppercase text-xs mb-3">Scheduling System v2.4 <span class="text-slate-400">| ERP CONTROLLER</span></p>
+                    <h2 class="font-headline text-4xl font-extrabold text-on-surface tracking-tight leading-tight">Master Timetable Matrix</h2>
+                    <p class="mt-2 text-sm text-on-surface-variant leading-relaxed">Admin Control Panel: Edit override properties by clicking cells. View and resolve system-detected conflicts.</p>
                 </div>
                 <div class="flex flex-col md:flex-row gap-3 items-start md:items-center">
                     <div class="flex items-center gap-3">
@@ -101,157 +107,562 @@
                             <option value="" disabled selected>Loading...</option>
                         </select>
                     </div>
-                    <div class="flex gap-3">
-                        <button id="refreshBtn" class="px-6 py-3 rounded-full border border-slate-200 font-semibold text-sm hover:bg-white transition-all active:scale-95 shadow-sm">
-                            Refresh schedules
+                    <div class="flex gap-2">
+                        <button id="refreshBtn" class="w-10 h-10 rounded-lg border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-all text-slate-500 shadow-sm">
+                            <span class="material-symbols-outlined text-xl">refresh</span>
                         </button>
-                        <button id="finalizeBtn" class="px-8 py-3 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-bold text-sm shadow-xl active:scale-95 transition-all">
-                            Finalize & Export
+                        <button class="px-5 py-2.5 rounded-lg border border-slate-200 bg-white font-bold text-sm hover:bg-slate-50 transition-all shadow-sm flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[18px]">auto_fix_high</span> Auto Fix
+                        </button>
+                        <button id="finalizeBtn" class="px-6 py-2.5 rounded-lg bg-gradient-to-r from-primary to-secondary text-white font-bold text-sm shadow-xl active:scale-95 transition-all">
+                            Publish & Export
                         </button>
                     </div>
                 </div>
             </div>
+            
+            <div class="flex items-center gap-2 mb-6 text-sm font-semibold text-slate-500 bg-white p-3 rounded-lg border shadow-sm w-max">
+                <span class="material-symbols-outlined text-[18px]">calendar_month</span>
+                <span>Term: Fall 2024</span>
+                <span class="mx-2 text-slate-300">|</span>
+                <span>Week 1</span>
+                <span class="mx-2 text-slate-300">|</span>
+                <span class="text-indigo-600 font-bold">Division A</span>
+            </div>
 
-            <div id="optionsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8"></div>
-
-            <!-- Main Timetable Grid -->
-            <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
-                <div class="grid grid-cols-12 bg-slate-50 border-b px-6 py-4">
-                    <div class="col-span-2 text-xs font-bold uppercase tracking-widest text-slate-400">Date &amp; Time</div>
-                    <div class="col-span-4 text-xs font-bold uppercase tracking-widest text-slate-400">Course Subject</div>
-                    <div class="col-span-3 text-xs font-bold uppercase tracking-widest text-slate-400">Lead Faculty</div>
-                    <div class="col-span-2 text-xs font-bold uppercase tracking-widest text-slate-400">Room / Lab</div>
-                    <div class="col-span-1"></div>
+            <!-- ERP Admin Features -->
+            <div class="flex items-center justify-between mb-8 overflow-x-auto pb-2" id="adminControls">
+                <div class="flex items-center gap-3">
+                    <div class="text-[11px] font-bold uppercase tracking-widest text-slate-400 mr-2">Admin Tools:</div>
+                    <button class="shrink-0 flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 rounded-full text-xs font-bold hover:bg-indigo-100 transition-colors">
+                        <span class="material-symbols-outlined text-sm">person_add</span> Add Faculty
+                    </button>
+                    <button class="shrink-0 flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold hover:bg-emerald-100 transition-colors">
+                        <span class="material-symbols-outlined text-sm">menu_book</span> Add Subject
+                    </button>
+                    <button class="shrink-0 flex items-center gap-2 px-4 py-2 bg-orange-50 text-orange-700 rounded-full text-xs font-bold hover:bg-orange-100 transition-colors">
+                        <span class="material-symbols-outlined text-sm">meeting_room</span> Add Room
+                    </button>
+                    <button class="shrink-0 flex items-center gap-2 px-4 py-2 bg-pink-50 text-pink-700 rounded-full text-xs font-bold hover:bg-pink-100 transition-colors">
+                        <span class="material-symbols-outlined text-sm">group_add</span> Add Division
+                    </button>
                 </div>
-                <div class="divide-y" id="timetableBody">
-                    <div class="px-6 py-5 text-sm text-slate-500" id="schedulePlaceholder">Loading schedules...</div>
+                <div class="flex items-center gap-4 bg-white border px-4 py-1.5 rounded-lg shadow-sm">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Role View:</span>
+                    <select id="roleView" class="text-sm font-semibold bg-transparent outline-none text-indigo-700 cursor-pointer">
+                        <option>ERP Administrator</option>
+                        <option>Teacher (Own Schedule)</option>
+                        <option>Student (Div A)</option>
+                    </select>
                 </div>
             </div>
 
-            <!-- AI Insight Panel -->
-            <div class="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="col-span-2 bg-white rounded-2xl p-6 border-l-4 border-primary shadow-sm">
-                    <div class="flex items-start gap-4">
-                        <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary shrink-0">
-                            <span class="material-symbols-outlined">tips_and_updates</span>
+            <!-- Empty State -->
+            <div id="emptyStateMsg" class="hidden bg-white rounded-xl shadow-sm border p-12 text-center text-slate-500 mb-8 max-w-2xl mx-auto">
+                <span class="material-symbols-outlined text-4xl mb-3 text-slate-300">event_busy</span>
+                <h3 class="font-headline text-xl font-bold text-on-surface mb-2">No schedules generated yet</h3>
+                <p class="mb-6">Optimize your curriculum by letting the AI find the best paths.</p>
+                <a href="{{ url_for('generate') }}" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-indigo-50 text-indigo-700 font-bold text-sm shadow-sm hover:bg-indigo-100 transition-all">
+                    <span>Generate Timetable</span>
+                    <span class="material-symbols-outlined text-sm">auto_awesome</span>
+                </a>
+            </div>
+
+            <div id="contentPanels">
+                <div id="optionsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4"></div>
+
+                <!-- Timetable Grid Visualizer -->
+                <div class="bg-white rounded-xl shadow-sm border overflow-x-auto mb-10 pb-4">
+                    <div class="min-w-[1200px]">
+                        <!-- Headers -->
+                        <div class="grid grid-cols-[120px_repeat(9,1fr)] bg-slate-800 text-white border-b *:px-2 *:py-3 *:text-[10px] *:font-bold *:uppercase *:tracking-widest *:text-center *:border-r *:border-slate-700">
+                            <div class="text-left !px-4">Date / Day</div>
+                            <div>9:00 - 10:00</div>
+                            <div>10:00 - 11:00</div>
+                            <div class="bg-slate-700 !text-slate-300">11:00 - 11:15</div>
+                            <div>11:15 - 12:15</div>
+                            <div>12:15 - 1:15</div>
+                            <div class="bg-slate-700 !text-slate-300">1:15 - 2:15</div>
+                            <div>2:15 - 3:15</div>
+                            <div>3:15 - 4:15</div>
+                            <div class="!border-r-0">4:15 - 5:15</div>
                         </div>
-                        <div>
-                            <h4 class="font-headline font-bold text-lg text-on-surface mb-2">Curator's Suggestion</h4>
-                            <p class="text-sm text-on-surface-variant leading-relaxed">
-                                Swapping <span class="font-bold text-primary">Lab 102</span> with <span class="font-bold text-primary">Hall 4C</span> for the Neural Network class will resolve the 10:00 AM conflict and increase student comfort scores by 14%.
-                            </p>
-                            <button class="mt-4 text-xs font-bold text-primary flex items-center gap-1 hover:underline uppercase">
-                                Apply Optimization <span class="material-symbols-outlined text-sm">auto_fix_high</span>
-                            </button>
+                        <!-- Canvas -->
+                        <div id="timetableGrid" class="divide-y divide-slate-100">
+                            <div class="px-6 py-10 text-sm text-slate-500 text-center col-span-12" id="schedulePlaceholder">Loading interactive grid...</div>
                         </div>
                     </div>
                 </div>
-                <div class="bg-indigo-50 rounded-2xl p-6 flex flex-col justify-center items-center text-center">
-                    <div class="text-3xl font-headline font-black text-on-surface">94<span class="text-primary">%</span></div>
-                    <div class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-4">Conflict-Free Score</div>
-                    <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
-                        <div class="bg-primary h-full rounded-full" style="width: 94%"></div>
+
+                <!-- AI Insight Panel -->
+                <div id="aiInsightPanel" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div id="curatorSuggestion" class="col-span-2 bg-white rounded-2xl p-6 border-l-4 border-indigo-500 shadow-sm relative overflow-hidden">
+                        <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-50 rounded-full opacity-50"></div>
+                        <div class="flex items-start gap-4 relative z-10">
+                            <div class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600 shrink-0">
+                                <span class="material-symbols-outlined">analytics</span>
+                            </div>
+                            <div>
+                                <h4 class="font-headline font-bold text-lg text-slate-800 mb-1">Timetable Insights</h4>
+                                <ul class="text-sm text-slate-600 space-y-2 mt-3 list-disc pl-4" id="insightsList">
+                                    <li>Workload balanced efficiently across dates.</li>
+                                    <li>Lab batches handled in parallel to respect physical constraints.</li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
-                    <p class="text-[10px] text-slate-400 mt-3 italic">Optimization algorithm active</p>
+                    <div class="bg-indigo-50 rounded-2xl p-6 flex flex-col justify-center items-center text-center relative overflow-hidden">
+                        <div class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-indigo-100/50 to-transparent"></div>
+                        <div class="text-4xl font-headline font-black text-indigo-900 flex items-center gap-1 relative z-10">
+                            <span id="fitnessScoreText">0</span><span class="text-indigo-500 text-2xl">%</span>
+                        </div>
+                        <div class="text-[10px] font-bold uppercase tracking-widest text-indigo-400 mb-2 mt-1 relative z-10">System Match</div>
+                        <div id="fitnessBadge" class="text-[11px] font-bold px-3 py-1 rounded-full mb-4 bg-emerald-100 text-emerald-800 border border-emerald-200 relative z-10">Conflict-Free ✅</div>
+                        <div class="w-full bg-white/60 rounded-full h-2 overflow-hidden relative z-10 border border-indigo-100">
+                            <div id="fitnessProgressBar" class="bg-indigo-500 h-full rounded-full transition-all duration-1000 shadow-[inset_0_1px_3px_rgba(0,0,0,0.1)]" style="width: 0%"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </main>
-    <script>
-        const timetableBody = document.getElementById('timetableBody');
+
+    <!-- Interactive Edit Modal (Step 3) -->
+    <div id="editModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 pointer-events-none transition-all duration-200">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-200 border border-slate-100" id="editModalPanel">
+            <div class="px-6 py-5 border-b flex justify-between items-center bg-slate-50">
+                <h3 class="font-headline font-bold text-lg text-slate-800 flex items-center gap-2">
+                    <span class="material-symbols-outlined text-indigo-600">edit_calendar</span> Edit Assignment
+                </h3>
+                <button onclick="closeEditModal()" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200 text-slate-500 transition-colors">
+                    <span class="material-symbols-outlined text-sm">close</span>
+                </button>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="bg-amber-50 border border-amber-200 text-amber-800 text-xs px-3 py-2 rounded-lg flex gap-2 items-start hidden" id="modalWarning">
+                    <span class="material-symbols-outlined text-[16px]">warning</span>
+                    <span id="modalWarningText">Faculty already booked for this time.</span>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Subject</label>
+                    <div id="modalSubjectName" class="font-semibold text-slate-800 text-sm p-3 bg-slate-50 rounded-lg border">AI & Machine Learning</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Date</label>
+                        <input type="date" id="modalDate" class="w-full bg-white border-slate-200 rounded-lg text-sm px-3 py-2 font-medium focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Slot</label>
+                        <select id="modalSlot" class="w-full bg-white border-slate-200 rounded-lg text-sm px-3 py-2 font-medium focus:ring-indigo-500 focus:border-indigo-500">
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Assigned Faculty</label>
+                    <select id="modalFaculty" class="w-full bg-white border-slate-200 rounded-lg text-sm px-3 py-2 font-medium focus:ring-indigo-500 focus:border-indigo-500">
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Assigned Room</label>
+                    <select id="modalRoom" class="w-full bg-white border-slate-200 rounded-lg text-sm px-3 py-2 font-medium focus:ring-indigo-500 focus:border-indigo-500">
+                    </select>
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-3 p-6 bg-slate-50 rounded-b-xl border-t border-slate-100">
+                <button onclick="closeEditModal()" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200 rounded-lg transition-colors">Cancel</button>
+                <button id="saveOverrideBtn" onclick="saveEditModal()" class="px-6 py-2 bg-indigo-600 text-white text-sm font-bold rounded-lg shadow-md shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center gap-2">
+                    Save Override
+                </button>
+            </div>
+        </div>
+    </div>
+        const timetableGrid = document.getElementById('timetableGrid');
         const placeholder = document.getElementById('schedulePlaceholder');
         const optionSelector = document.getElementById('optionSelector');
         const finalizeBtn = document.getElementById('finalizeBtn');
         const refreshBtn = document.getElementById('refreshBtn');
         const optionsContainer = document.getElementById('optionsContainer');
+        const adminControls = document.getElementById('adminControls');
         const exportUrl = "{{ url_for('export') }}";
         let cachedOptions = {};
+        
+        // Modal State
+        const editModal = document.getElementById('editModal');
+        const editModalPanel = document.getElementById('editModalPanel');
 
-        function toTimeRange(start, end) {
-            return `${start?.slice(0,5)} - ${end ? end.slice(0,5) : ''}`;
+        const TIME_COLS = [
+            { start: '09:00:00', end: '10:00:00', label: '9:00 - 10:00', type: 'slot' },
+            { start: '10:00:00', end: '11:00:00', label: '10:00 - 11:00', type: 'slot' },
+            { start: '11:00:00', end: '11:15:00', label: 'Short Break', type: 'break' },
+            { start: '11:15:00', end: '12:15:00', label: '11:15 - 12:15', type: 'slot' },
+            { start: '12:15:00', end: '13:15:00', label: '12:15 - 1:15', type: 'slot' },
+            { start: '13:15:00', end: '14:15:00', label: 'Lunch Break', type: 'break' },
+            { start: '14:15:00', end: '15:15:00', label: '2:15 - 3:15', type: 'slot' },
+            { start: '16:15:00', end: '17:15:00', label: '4:15 - 5:15', type: 'slot' }
+        ];
+
+        let validationTimeout = null;
+        function debounce(fn, ms) {
+            return function(...args) {
+                clearTimeout(validationTimeout);
+                validationTimeout = setTimeout(() => fn.apply(this, args), ms);
+            }
         }
 
-        function clearTable() {
-            timetableBody.innerHTML = '';
+        window.scheduleItemMap = {};
+        window.resourcesLoaded = false;
+        
+        async function fetchResources() {
+            try {
+                const res = await fetch('/api/resources');
+                const data = await res.json();
+                if (data.success) {
+                    const fn = document.getElementById('modalFaculty');
+                    const rn = document.getElementById('modalRoom');
+                    const sn = document.getElementById('modalSlot');
+                    
+                    fn.innerHTML = data.faculty.map(f => `<option value="${f.id}">${f.name}</option>`).join('');
+                    rn.innerHTML = data.rooms.map(r => `<option value="${r.id}">${r.name} (${r.type})</option>`).join('');
+                    sn.innerHTML = TIME_COLS.filter(c => c.type === 'slot').map(s => 
+                        `<option value="${s.start}|${s.end}">${s.label}</option>`
+                    ).join('');
+                    
+                    window.resourcesLoaded = true;
+                }
+            } catch (e) {
+                console.error("Resource load error:", e);
+            }
         }
+
+        let currentEditingId = null;
+
+        async function triggerLiveValidation() {
+            if (!currentEditingId) return;
+            
+            const btn = document.getElementById('saveOverrideBtn');
+            const statusBox = document.getElementById('modalWarning');
+            const statusText = document.getElementById('modalWarningText');
+            const alertIcon = statusBox.querySelector('.material-symbols-outlined');
+            
+            const times = document.getElementById('modalSlot').value.split('|');
+            const payload = {
+                schedule_id: currentEditingId,
+                option_no: optionSelector.value,
+                exam_date: document.getElementById('modalDate').value,
+                start_time: times[0],
+                end_time: times[1],
+                faculty_id: document.getElementById('modalFaculty').value,
+                room_id: document.getElementById('modalRoom').value
+            };
+
+            statusBox.classList.remove('hidden', 'bg-red-50', 'bg-emerald-50', 'text-red-700', 'text-emerald-700');
+            statusBox.classList.add('bg-slate-50', 'text-slate-600');
+            statusText.innerText = "Checking conflicts...";
+            alertIcon.innerText = "sync";
+            alertIcon.classList.add('animate-spin');
+
+            try {
+                const res = await fetch('/api/schedule/validate', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                
+                alertIcon.classList.remove('animate-spin');
+                statusBox.classList.remove('bg-slate-50', 'text-slate-600');
+
+                if (data.valid) {
+                    statusBox.classList.add('bg-emerald-50', 'text-emerald-700');
+                    statusText.innerText = "No conflicts detected. Ready to save.";
+                    alertIcon.innerText = "check_circle";
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                } else {
+                    statusBox.classList.add('bg-red-50', 'text-red-700');
+                    statusText.innerText = data.conflicts.map(c => c.message).join(' & ');
+                    alertIcon.innerText = "warning";
+                    btn.disabled = true;
+                    btn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+            } catch (err) {
+                console.error(err);
+                statusBox.classList.add('hidden');
+            }
+        }
+
+        const debouncedValidate = debounce(triggerLiveValidation, 400);
+
+        // Bind events
+        ['modalDate', 'modalSlot', 'modalFaculty', 'modalRoom'].forEach(id => {
+            document.getElementById(id).addEventListener('change', debouncedValidate);
+        });
+
+        function openEditModal(schedule_id) {
+            const item = window.scheduleItemMap[schedule_id];
+            if (!item) return;
+            currentEditingId = schedule_id;
+
+            document.getElementById('modalSubjectName').innerText = item.subject_name;
+            document.getElementById('modalDate').value = item.date;
+            document.getElementById('modalSlot').value = `${item.start}|${item.end}`;
+            document.getElementById('modalFaculty').value = item.faculty_id;
+            document.getElementById('modalRoom').value = item.room_id;
+            
+            // Trigger initial validation
+            triggerLiveValidation();
+
+            // Show modal
+            editModal.classList.remove('opacity-0', 'pointer-events-none');
+            editModalPanel.classList.remove('scale-95');
+            editModalPanel.classList.add('scale-100');
+        }
+
+        function closeEditModal() {
+            editModal.classList.add('opacity-0', 'pointer-events-none');
+            editModalPanel.classList.remove('scale-100');
+            editModalPanel.classList.add('scale-95');
+            currentEditingId = null;
+        }
+        window.closeEditModal = closeEditModal;
+
+        async function saveEditModal() {
+            if (!currentEditingId) return;
+            
+            const btn = event.target;
+            const originalBtnHtml = btn.innerHTML;
+            btn.innerHTML = `<span class="material-symbols-outlined text-[16px] animate-spin inline-block">refresh</span> Saving...`;
+            btn.disabled = true;
+
+            const times = document.getElementById('modalSlot').value.split('|');
+            const payload = {
+                schedule_id: currentEditingId,
+                option_no: optionSelector.value,
+                exam_date: document.getElementById('modalDate').value,
+                start_time: times[0],
+                end_time: times[1],
+                faculty_id: document.getElementById('modalFaculty').value,
+                room_id: document.getElementById('modalRoom').value
+            };
+
+            try {
+                const res = await fetch('/api/schedule/update', {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    closeEditModal();
+                    loadSchedules();
+                } else {
+                    modalWarning.classList.remove('hidden');
+                    modalWarningText.innerText = data.message;
+                }
+            } catch (err) {
+                console.error(err);
+                modalWarning.classList.remove('hidden');
+                modalWarningText.innerText = "Network Error: Could not connect to API.";
+            } finally {
+                btn.innerHTML = originalBtnHtml;
+                btn.disabled = false;
+            }
+        }
+        window.saveEditModal = saveEditModal;
 
         function renderOptionCards(grouped) {
             optionsContainer.innerHTML = '';
             const optionNos = Object.keys(grouped).sort();
-            if (optionNos.length === 0) {
-                optionsContainer.innerHTML = '<div class="text-sm text-slate-500">No options yet.</div>';
-                return;
-            }
+            if (optionNos.length === 0) return;
+
+            const selectedOpt = optionSelector.value || optionNos[0];
+
             optionNos.forEach(opt => {
                 const card = document.createElement('div');
-                card.className = 'border rounded-lg p-4 bg-white shadow-sm';
-                const fitness = grouped[opt].fitness;
+                const isSelected = (opt.toString() === selectedOpt.toString());
+                const borderClass = isSelected ? 'border-primary ring-2 ring-primary/20' : 'border-slate-200 hover:border-slate-300';
+                
+                card.className = `border rounded-xl p-5 bg-white shadow-sm cursor-pointer transition-all ${borderClass}`;
+                card.onclick = () => selectSchedule(opt);
+
+                const fitness = grouped[opt].fitness || 0;
+                const isConflictFree = fitness > 0;
+                
                 card.innerHTML = `
-                    <div class="flex justify-between items-center mb-2">
-                        <h3 class="font-headline font-bold text-lg">Option ${opt}</h3>
-                        <span class="text-xs font-semibold text-primary">Fitness: ${fitness ?? 'N/A'}</span>
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-headline font-bold text-lg text-slate-800">Option ${opt}</h3>
+                        <span class="px-2.5 py-1 ${isConflictFree ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-700'} rounded-md text-[10px] font-bold uppercase tracking-wider border ${isConflictFree ? 'border-emerald-200' : 'border-red-200'}">
+                            ${isConflictFree ? 'Conflict-Free' : 'Issues'}
+                        </span>
                     </div>
-                    <pre class="bg-slate-50 p-2 rounded text-[11px] overflow-auto max-h-40">${JSON.stringify(grouped[opt].schedule, null, 2)}</pre>
-                    <button class="mt-3 text-sm font-semibold text-primary underline" onclick="selectSchedule(${opt})">Select</button>
+                    <div class="flex items-center justify-between mt-4">
+                        <span class="text-xs font-semibold text-slate-500">System Match Score</span>
+                        <span class="text-sm font-bold text-indigo-700">${fitness}</span>
+                    </div>
                 `;
                 optionsContainer.appendChild(card);
             });
         }
 
-        function renderSchedules(grouped) {
-            clearTable();
-            if (!grouped || Object.keys(grouped).length === 0) {
-                timetableBody.innerHTML = '<div class="px-6 py-5 text-sm text-slate-500">No schedules yet. Generate first.</div>';
+        function updateUIStates(grouped) {
+            const emptyStateMsg = document.getElementById('emptyStateMsg');
+            const contentPanels = document.getElementById('contentPanels');
+            const hasOptions = grouped && Object.keys(grouped).length > 0;
+            
+            if (!hasOptions) {
+                emptyStateMsg.classList.remove('hidden');
+                contentPanels.classList.add('hidden');
+                adminControls.classList.add('hidden');
+                
+                finalizeBtn.disabled = true;
+                finalizeBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                
+                optionSelector.disabled = true;
                 optionSelector.innerHTML = '<option value="" disabled selected>No options</option>';
+            } else {
+                emptyStateMsg.classList.add('hidden');
+                contentPanels.classList.remove('hidden');
+                adminControls.classList.remove('hidden');
+                
+                finalizeBtn.disabled = false;
+                finalizeBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                optionSelector.disabled = false;
+            }
+            return hasOptions;
+        }
+
+        function renderGrid(rows) {
+            timetableGrid.innerHTML = '';
+            if (!rows || rows.length === 0) {
+                timetableGrid.innerHTML = '<div class="px-6 py-10 text-sm text-slate-500 text-center col-span-12">Empty option.</div>';
                 return;
             }
 
-            // Populate option dropdown
-            optionSelector.innerHTML = '';
-            Object.keys(grouped).sort().forEach(opt => {
-                const optEl = document.createElement('option');
-                optEl.value = opt;
-                optEl.textContent = `Option ${opt} (fitness ${grouped[opt].fitness})`;
-                optionSelector.appendChild(optEl);
+            // Group by Date -> Time -> Array of subjects (for parallel labs)
+            window.scheduleItemMap = {};
+            rows.forEach(r => {
+                window.scheduleItemMap[r.schedule_id] = r;
+                if (!dateMap[r.date]) dateMap[r.date] = {};
+                if (!dateMap[r.date][r.start]) dateMap[r.date][r.start] = [];
+                dateMap[r.date][r.start].push(r);
             });
+
+            Object.keys(dateMap).sort().forEach(date => {
+                const dayStr = new Date(date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric'});
+                
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'grid grid-cols-[120px_repeat(9,1fr)] bg-white hover:bg-slate-50 transition-colors border-b last:border-0';
+                
+                // Date Column
+                let html = `
+                    <div class="p-3 border-r flex flex-col justify-center">
+                        <span class="text-xs font-bold text-slate-800">${dayStr}</span>
+                    </div>
+                `;
+
+                TIME_COLS.forEach(col => {
+                    if (col.type === 'break') {
+                        html += `<div class="bg-stripes flex items-center justify-center border-r"><span class="text-[10px] font-bold text-slate-400 rotate-[-90deg] uppercase tracking-widest whitespace-nowrap opacity-50 block">${col.label}</span></div>`;
+                    } else {
+                        const items = dateMap[date][col.start] || [];
+                        let cellContent = '';
+                        
+                        if (items.length === 0) {
+                            cellContent = `<div class="w-full h-full min-h-[80px] hover:bg-indigo-50/30 cursor-pointer transition-colors" onclick="openEditModal(null)"></div>`;
+                        } else {
+                            // Multiple items stacked natively handles Lab Parallel Batches!
+                            items.forEach(item => {
+                                const isLab = (item.subject_type === 'LAB');
+                                const bgClass = isLab ? 'bg-blue-50 border-blue-200 hover:bg-blue-100' : 'bg-green-50 border-green-200 hover:bg-green-100';
+                                const textClass = isLab ? 'text-blue-800' : 'text-green-800';
+                                const typeIcon = isLab ? 'science' : 'menu_book';
+                                
+                                cellContent += `
+                                    <div class="p-2 border rounded-md mb-1 shadow-sm cursor-pointer transition-transform hover:scale-[1.02] ${bgClass}" onclick="openEditModal('${item.schedule_id}')">
+                                        <div class="flex items-center gap-1 mb-1">
+                                            <span class="material-symbols-outlined text-[12px] opacity-70 ${textClass}">${typeIcon}</span>
+                                            <span class="text-[10px] font-bold uppercase leading-tight truncate ${textClass}" title="${item.subject_name}">${item.subject_name}</span>
+                                        </div>
+                                        <div class="text-[10px] text-slate-600 truncate flex items-center gap-1"><span class="material-symbols-outlined text-[10px]">person</span> ${item.faculty_name || 'TBD'}</div>
+                                        <div class="text-[10px] text-slate-600 truncate flex items-center gap-1 mt-0.5"><span class="material-symbols-outlined text-[10px]">meeting_room</span> ${item.room_name || 'TBD'}</div>
+                                    </div>
+                                `;
+                            });
+                        }
+                        
+                        html += `<div class="p-1 border-r border-slate-100">${cellContent}</div>`;
+                    }
+                });
+                
+                rowDiv.innerHTML = html;
+                timetableGrid.appendChild(rowDiv);
+            });
+            
+            // Add custom background stripes style dynamically
+            if (!document.getElementById('stripesStyle')) {
+                const style = document.createElement('style');
+                style.id = 'stripesStyle';
+                style.innerHTML = `
+                    .bg-stripes {
+                        background-image: repeating-linear-gradient(45deg, #f8fafc 0, #f8fafc 4px, #f1f5f9 4px, #f1f5f9 8px);
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+
+        function renderSchedules(grouped) {
+            timetableGrid.innerHTML = '';
+            
+            if (!updateUIStates(grouped)) return;
+
+            if (optionSelector.options.length <= 1) {
+                optionSelector.innerHTML = '';
+                Object.keys(grouped).sort().forEach(opt => {
+                    const optEl = document.createElement('option');
+                    optEl.value = opt;
+                    optEl.textContent = `Option ${opt} (Score: ${grouped[opt].fitness})`;
+                    optionSelector.appendChild(optEl);
+                });
+            }
 
             const currentOpt = optionSelector.value || Object.keys(grouped)[0];
             optionSelector.value = currentOpt;
 
-            const rows = grouped[currentOpt]?.schedule || [];
-            if (rows.length === 0) {
-                timetableBody.innerHTML = '<div class="px-6 py-5 text-sm text-slate-500">Empty option.</div>';
-                return;
+            renderOptionCards(grouped);
+
+            const activeOptionObj = grouped[currentOpt];
+            const rows = activeOptionObj?.schedule || [];
+
+            if (activeOptionObj) {
+                const fitness = activeOptionObj.fitness || 0;
+                const isConflictFree = fitness > 0;
+                let percent = (fitness > 0 ? 100 - ((10000-fitness)/10000)*100 : 50).toFixed(0); 
+                if (percent > 100) percent = 100;
+                if (percent < 0) percent = 0;
+
+                document.getElementById('fitnessScoreText').innerText = percent;
+                document.getElementById('fitnessProgressBar').style.width = percent + '%';
+                
+                const badge = document.getElementById('fitnessBadge');
+                if (isConflictFree) {
+                    badge.className = "text-[11px] font-bold px-3 py-1 rounded-full mb-4 bg-emerald-100 text-emerald-800 border border-emerald-200 relative z-10";
+                    badge.innerText = "Conflict-Free ✅";
+                } else {
+                    badge.className = "text-[11px] font-bold px-3 py-1 rounded-full mb-4 bg-amber-100 text-amber-800 border border-amber-200 relative z-10";
+                    badge.innerText = "Minor Issues ⚠️";
+                }
             }
 
-            rows.forEach((row) => {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'grid grid-cols-12 px-6 py-5 items-center hover:bg-slate-50 transition-colors';
-                wrapper.innerHTML = `
-                    <div class="col-span-2">
-                        <div class="text-sm font-semibold text-on-surface">${row.date}</div>
-                        <div class="text-xs text-on-surface-variant">${toTimeRange(row.start, row.end)}</div>
-                    </div>
-                    <div class="col-span-4 pr-8">
-                        <div class="text-sm font-bold text-primary">${row.subject_name || 'Subject ' + row.subject_id}</div>
-                    </div>
-                    <div class="col-span-3">
-                        <div class="text-sm font-medium text-on-surface">${row.faculty_name || 'Faculty ' + row.faculty_id}</div>
-                    </div>
-                    <div class="col-span-2">
-                        <div class="w-full bg-slate-100 rounded-lg px-3 py-1.5 text-xs font-medium border-none">${row.room_name || ('Room ' + row.room_id)}</div>
-                    </div>
-                    <div class="col-span-1 flex justify-end">
-                        <span class="material-symbols-outlined text-slate-300">drag_indicator</span>
-                    </div>
-                `;
-                timetableBody.appendChild(wrapper);
-            });
+            renderGrid(rows);
         }
 
         async function loadSchedules() {
             try {
-                if (placeholder) placeholder.textContent = 'Loading schedules...';
+                if (!window.resourcesLoaded) await fetchResources();
+                if (placeholder) placeholder.textContent = 'Loading matrix grid...';
                 const res = await fetch('/api/schedules');
                 const data = await res.json();
                 cachedOptions = data.data || {};
@@ -259,31 +670,26 @@
                 renderSchedules(cachedOptions);
             } catch (e) {
                 console.error(e);
-                timetableBody.innerHTML = '<div class="px-6 py-5 text-sm text-red-500">Failed to load schedules.</div>';
+                timetableGrid.innerHTML = '<div class="px-6 py-5 text-sm text-red-500 text-center col-span-12">Failed to load schedules grid.</div>';
             }
         }
 
-        optionSelector.addEventListener('change', () => {
-            // reload to re-render with selected option
-            loadSchedules();
-        });
-
-        refreshBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            loadSchedules();
-        });
+        optionSelector.addEventListener('change', () => loadSchedules());
+        refreshBtn.addEventListener('click', (e) => { e.preventDefault(); loadSchedules(); });
 
         async function selectSchedule(opt) {
             optionSelector.value = opt;
             renderSchedules(cachedOptions);
         }
-
         window.selectSchedule = selectSchedule;
 
         finalizeBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             const opt = optionSelector.value;
             if (!opt) return alert('Select an option first.');
+            
+            const btnText = finalizeBtn.innerText;
+            finalizeBtn.innerHTML = 'Publishing...';
             try {
                 const res = await fetch('/save_schedule', {
                     method: 'POST',
@@ -295,14 +701,25 @@
                     window.location.href = exportUrl;
                 } else {
                     alert(data.message || 'Save failed');
+                    finalizeBtn.innerHTML = btnText;
                 }
             } catch (err) {
                 console.error(err);
                 alert('Save failed');
+                finalizeBtn.innerHTML = btnText;
             }
         });
 
-        loadSchedules();
+        loadSchedules().then(() => {
+            if (window.location.search.includes('print=true')) {
+                // Allows DOM to fully render the CSS Grid Layout before printing
+                setTimeout(() => {
+                    window.print();
+                    // Optional: remove query string so refreshing doesn't keep printing
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }, 800);
+            }
+        });
     </script>
 </body>
 </html>
