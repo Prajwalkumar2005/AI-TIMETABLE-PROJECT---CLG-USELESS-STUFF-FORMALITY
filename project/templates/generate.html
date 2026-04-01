@@ -105,9 +105,9 @@
                                 </div>
                             </div>
                         </div>
-                        <button class="w-full py-5 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-bold text-lg shadow-xl hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 group" type="submit">
-                            <span>Trigger Generation</span>
-                            <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">auto_awesome</span>
+                        <button id="generateBtn" class="w-full py-5 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-bold text-lg shadow-xl hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3 group" type="submit">
+                            <span id="generateBtnText">Trigger Generation</span>
+                            <span id="generateBtnIcon" class="material-symbols-outlined group-hover:translate-x-1 transition-transform">auto_awesome</span>
                         </button>
                     </form>
                 </div>
@@ -130,7 +130,7 @@
         <!-- Progress Overlay (Hidden initially) -->
         <div id="progressOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white">
             <div class="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mb-6"></div>
-            <h2 class="font-headline text-3xl font-bold mb-2">Analyzing Constraints</h2>
+            <h2 class="font-headline text-3xl font-bold mb-2">Generating optimized schedules...</h2>
             <p class="text-white/60 font-medium">Evolutionary algorithm calculating optimal paths...</p>
         </div>
     </main>
@@ -205,16 +205,36 @@
         }
 
         async function runGeneration(autoFix = false) {
-            document.getElementById('progressOverlay').classList.remove('hidden');
-            errorCard.classList.add('hidden');
-
+            const btn = document.getElementById('generateBtn');
+            const btnText = document.getElementById('generateBtnText');
+            const btnIcon = document.getElementById('generateBtnIcon');
+            
             const formData = lastFormData || {
                 department: document.getElementById('department').value,
                 year: document.getElementById('year').value,
                 division: document.getElementById('division').value,
                 examTypes: Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(c => c.value),
-                dateRange: document.getElementById('dateRange').value
+                dateRange: document.getElementById('dateRange').value.trim()
             };
+            
+            // Phase 2 Validation: Check required fields before triggering API
+            if (!formData.dateRange) {
+                showToast('Validation Error: Date Range requires a valid input (e.g. Oct 12 - Oct 28, 2024).', 'warn');
+                return;
+            }
+            if (!formData.examTypes.length) {
+                showToast('Validation Error: You must select at least one Exam Type.', 'warn');
+                return;
+            }
+
+            // disable UI during API call
+            btn.disabled = true;
+            btnText.textContent = "Generating...";
+            btnIcon.classList.add('animate-spin');
+
+            document.getElementById('progressOverlay').classList.remove('hidden');
+            errorCard.classList.add('hidden');
+
             lastFormData = formData;
             formData.auto_fix = autoFix;
 
@@ -231,15 +251,15 @@
                 }
                 renderOptions(data.options || [], data.warning);
                 localStorage.setItem('gaOptions', JSON.stringify(data.options || []));
-                if (data.warning) {
-                    showToast(data.warning, 'warn');
-                } else {
-                    showToast('Generated 3 schedule options', 'success');
-                }
-                setTimeout(() => { window.location.href = schedulesUrl; }, 800);
+                
+                showToast('Schedules generated successfully!', 'success');
+                setTimeout(() => { window.location.href = schedulesUrl; }, 1200);
             } catch (error) {
                 console.error("Error triggering generation:", error);
                 document.getElementById('progressOverlay').classList.add('hidden');
+                btn.disabled = false;
+                btnText.textContent = "Trigger Generation";
+                btnIcon.classList.remove('animate-spin');
                 showError({
                     message: error.message || 'Generation failed. Missing mappings or data.',
                     missing: error.missing

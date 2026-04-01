@@ -1,6 +1,6 @@
 from flask import Flask, render_template, redirect, url_for, session, request
 from flask_cors import CORS
-from routes.api import api_bp, generate_timetable, save_schedule
+from project.routes.api import api_bp, generate_timetable, save_schedule
 import os
 
 app = Flask(__name__)
@@ -18,12 +18,25 @@ def index():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        # Simple local auth for demo
+        # Simple local auth for demo with Role-Based routing (Phase 2)
         email = request.form.get('email')
         password = request.form.get('password')
+        
         if email == 'admin@scholarprism.edu' and password == 'admin123':
             session['user'] = 'admin'
+            session['role'] = 'Administrator'
             return redirect(url_for('dashboard'))
+        elif email == 'teacher@scholarprism.edu' and password == 'teacher123':
+            session['user'] = 'teacher'
+            session['role'] = 'Teacher'
+            return redirect(url_for('teacher_dashboard'))
+        elif email == 'student@scholarprism.edu' and password == 'student123':
+            session['user'] = 'student'
+            session['role'] = 'Student'
+            return redirect(url_for('student_dashboard'))
+        else:
+            return render_template('login.html', error="Invalid credentials")
+            
     return render_template('login.html')
 
 @app.route('/logout')
@@ -34,7 +47,17 @@ def logout():
 @app.route('/dashboard')
 def dashboard():
     if 'user' not in session: return redirect(url_for('login'))
-    return render_template('dashboard.html')
+    return render_template('dashboard.html', role=session.get('role', 'Administrator'))
+
+@app.route('/teacher_dashboard')
+def teacher_dashboard():
+    if 'user' not in session or session.get('role') != 'Teacher': return redirect(url_for('login'))
+    return render_template('dashboard.html', role='Teacher')
+
+@app.route('/student_dashboard')
+def student_dashboard():
+    if 'user' not in session or session.get('role') != 'Student': return redirect(url_for('login'))
+    return render_template('dashboard.html', role='Student')
 
 @app.route('/generate')
 def generate():

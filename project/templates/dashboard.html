@@ -63,14 +63,17 @@
                 <span class="material-symbols-outlined">dashboard</span>
                 <span class="font-body text-sm font-medium">Dashboard</span>
             </a>
+            {% if role == 'Administrator' %}
             <a class="flex items-center gap-4 py-3 px-6 text-slate-600 hover:bg-slate-100 rounded-full transition-transform" href="{{ url_for('generate') }}">
                 <span class="material-symbols-outlined">auto_awesome</span>
                 <span class="font-body text-sm font-medium">Generate</span>
             </a>
+            {% endif %}
             <a class="flex items-center gap-4 py-3 px-6 text-slate-600 hover:bg-slate-100 rounded-full transition-transform" href="{{ url_for('schedules') }}">
                 <span class="material-symbols-outlined">calendar_month</span>
                 <span class="font-body text-sm font-medium">Schedules</span>
             </a>
+            {% if role == 'Administrator' %}
             <a class="flex items-center gap-4 py-3 px-6 text-slate-600 hover:bg-slate-100 rounded-full transition-transform" href="{{ url_for('admin') }}">
                 <span class="material-symbols-outlined">admin_panel_settings</span>
                 <span class="font-body text-sm font-medium">Admin</span>
@@ -78,6 +81,11 @@
             <a class="flex items-center gap-4 py-3 px-6 text-slate-600 hover:bg-slate-100 rounded-full transition-transform" href="{{ url_for('settings') }}">
                 <span class="material-symbols-outlined">settings</span>
                 <span class="font-body text-sm font-medium">Settings</span>
+            </a>
+            {% endif %}
+            <a class="flex items-center gap-4 py-3 px-6 text-red-600 hover:bg-red-50 rounded-full transition-transform mt-auto absolute bottom-8 w-[calc(100%-2rem)]" href="{{ url_for('logout') }}">
+                <span class="material-symbols-outlined">logout</span>
+                <span class="font-body text-sm font-medium">Logout</span>
             </a>
         </nav>
     </aside>
@@ -87,13 +95,25 @@
         <div class="max-w-6xl mx-auto">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
                 <div class="space-y-2">
-                    <h2 class="font-headline text-5xl font-extrabold text-on-surface tracking-tight leading-tight">Good Evening, Admin</h2>
+                    <h2 class="font-headline text-5xl font-extrabold text-on-surface tracking-tight leading-tight">Good Evening, {{ role }}</h2>
                     <p class="text-on-surface-variant text-lg font-medium opacity-70">Scholar Prism AI Control Center</p>
                 </div>
-                <button onclick="window.location.href='{{ url_for('generate') }}'" class="bg-gradient-to-br from-primary to-secondary text-white px-8 py-4 rounded-full font-headline font-bold text-sm flex items-center gap-3 transition-all shadow-lg neon-glow">
+                {% if role == 'Administrator' %}
+                <button onclick="window.location.href='{{ url_for('generate') }}'" class="bg-gradient-to-br from-primary to-secondary text-white px-8 py-4 rounded-full font-headline font-bold text-sm flex items-center gap-3 transition-all shadow-lg neon-glow cursor-pointer">
                     <span class="material-symbols-outlined">auto_awesome</span>
                     Generate New Timetable
                 </button>
+                {% elif role == 'Teacher' %}
+                <button onclick="window.location.href='{{ url_for('schedules') }}'" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-8 py-4 rounded-full font-headline font-bold text-sm flex items-center gap-3 transition-all">
+                    <span class="material-symbols-outlined">calendar_month</span>
+                    View My Schedule
+                </button>
+                {% else %}
+                <button onclick="window.location.href='{{ url_for('schedules') }}'" class="bg-indigo-50 text-indigo-700 hover:bg-indigo-100 px-8 py-4 rounded-full font-headline font-bold text-sm flex items-center gap-3 transition-all">
+                    <span class="material-symbols-outlined">school</span>
+                    View Class Timetable
+                </button>
+                {% endif %}
             </div>
 
             <!-- Stats -->

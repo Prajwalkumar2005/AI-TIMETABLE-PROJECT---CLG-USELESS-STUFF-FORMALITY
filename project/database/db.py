@@ -8,7 +8,7 @@ class Database:
         self.config = {
             'host': os.getenv('DB_HOST', 'localhost'),
             'user': os.getenv('DB_USER', 'root'),
-            'password': os.getenv('DB_PASSWORD', ''), # set DB_PASSWORD env for safety
+            'password': os.getenv('DB_PASSWORD', '@Prajwal32'), # set DB_PASSWORD env for safety
             'database': os.getenv('DB_NAME', 'timetable_ai')
         }
 

@@ -79,7 +79,8 @@
     </main>
     <script>
         document.getElementById('pdfBtn').addEventListener('click', function() {
-            alert('PDF export coming soon. Use Excel download for now.');
+            // Redirect to editor grid and trigger print dialog
+            window.location.href = "{{ url_for('schedules') }}?print=true";
         });
     </script>
 </body>

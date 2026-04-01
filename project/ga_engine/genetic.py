@@ -1,8 +1,8 @@
 import random
 import copy
 from datetime import datetime, timedelta
-from ga_engine.fitness import calculate_fitness
-from ga_engine.mutation import mutate
+from project.ga_engine.fitness import calculate_fitness
+from project.ga_engine.mutation import mutate
 
 class GeneticAlgorithm:
     def __init__(self, subjects, rooms, faculty_prefs, dates_available, time_slots):
@@ -19,9 +19,9 @@ class GeneticAlgorithm:
         self.dates_available = dates_available
         self.time_slots = time_slots
 
-        self.pop_size = 50
-        self.generations = 120
-        self.mutation_rate = 0.25
+        self.pop_size = 200
+        self.generations = 500
+        self.mutation_rate = 0.4
         self.crossover_rate = 0.8
         self.tournament_size = 5
         self.elite_count = 5
