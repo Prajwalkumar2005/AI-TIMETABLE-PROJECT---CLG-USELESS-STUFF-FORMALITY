@@ -47,7 +47,23 @@ def logout():
 @app.route('/dashboard')
 def dashboard():
     if 'user' not in session: return redirect(url_for('login'))
-    return render_template('dashboard.html', role=session.get('role', 'Administrator'))
+    data = {
+        "total_classes": 1284,
+        "faculty_count": 342,
+        "occupancy": 88,
+        "conflicts": 12,
+        "role": session.get('role', 'Administrator')
+    }
+    return render_template('dashboard.html', **data)
+
+@app.route("/scheduler")
+def scheduler():
+    timetable = [
+        {"time": "09:00", "subject": "Algorithms", "conflict": False},
+        {"time": "10:00", "subject": "Data Structures", "conflict": True},
+        {"time": "11:00", "subject": None, "conflict": False},
+    ]
+    return render_template("scheduler.html", timetable=timetable)
 
 @app.route('/teacher_dashboard')
 def teacher_dashboard():
