@@ -1,284 +1,235 @@
 <!DOCTYPE html>
-<html class="light" lang="en">
+<html lang="en">
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Scholar Prism | Generate Timetable</title>
+    <title>Scholar Prism | Exam Plan Generator</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800;900&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-    <script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#3525cd",
-                        "secondary": "#712ae2",
-                        "surface": "#f7f9fb",
-                    },
-                    fontFamily: {
-                        "headline": ["Manrope"],
-                        "body": ["Inter"],
-                    },
-                },
-            },
-        }
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1" rel="stylesheet"/>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0F172A; color: white; }
+        .headline { font-family: 'Manrope', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%); }
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .card-hover:hover { border-color: rgba(59, 130, 246, 0.5); background: rgba(59, 130, 246, 0.05); }
+    </style>
 </head>
-<body class="bg-surface font-body text-on-surface">
-    <!-- Top Navigation -->
-    <header class="fixed top-0 w-full z-40 bg-white/60 backdrop-blur-xl shadow-sm border-b">
-        <div class="flex items-center justify-between px-6 h-20 w-full max-w-7xl mx-auto">
-            <div class="flex items-center gap-4">
-                <a href="{{ url_for('dashboard') }}" class="material-symbols-outlined text-indigo-600">arrow_back</a>
-                <h1 class="font-headline font-black text-indigo-700 tracking-tighter text-2xl">Scholar Prism</h1>
+<body class="min-h-screen">
+    <header class="border-b border-white/10 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-blue-400 text-3xl">Auto_Awesome</span>
+                <span class="headline font-bold text-2xl tracking-tight">Scholar Prism <span class="text-blue-500 text-sm font-medium border border-blue-500/30 px-2 py-0.5 rounded ml-2">v2.0</span></span>
             </div>
+            <a href="/dashboard" class="text-sm font-medium py-2 px-4 rounded-lg bg-white/5 hover:bg-white/10 transition-all">Back to Dashboard</a>
         </div>
     </header>
 
-    <main class="pt-32 pb-20 px-6 max-w-7xl mx-auto">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-            <!-- Form Section -->
-            <div class="lg:col-span-12 space-y-8">
-                <header class="space-y-4">
-                    <h1 class="font-headline text-5xl md:text-6xl font-extrabold tracking-tight text-on-surface leading-[1.1]">
-                        Architect Your <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Semester.</span>
-                    </h1>
-                    <p class="text-on-surface-variant text-lg leading-relaxed max-w-md">
-                        Optimized exam flows powered by AI in seconds.
-                    </p>
-                </header>
+    <main class="max-w-4xl mx-auto px-6 py-12">
+        <header class="mb-12">
+            <h1 class="headline text-4xl font-extrabold mb-3">Generate Exam Plan</h1>
+            <p class="text-slate-400">Configure branches, subjects, and dates to generate a complete allocation.</p>
+        </header>
 
-                <div class="bg-white p-8 rounded-lg shadow-lg border border-white/40 max-w-2xl">
-                    <form class="space-y-6" id="generateForm">
-                        <div class="grid grid-cols-1 gap-6">
-                            <!-- Department -->
-                            <div class="space-y-2">
-                                <label class="text-sm font-semibold text-indigo-900/70 ml-1">Department</label>
-                                <select class="w-full bg-slate-100 border-none rounded-md px-4 py-3 appearance-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all" id="department">
-                                    <option value="CSE">Computer Science &amp; Engineering</option>
-                                    <option value="ME">Mechanical Engineering</option>
-                                    <option value="BA">Business Administration</option>
-                                </select>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <!-- Year -->
-                                <div class="space-y-2">
-                                    <label class="text-sm font-semibold text-indigo-900/70 ml-1">Academic Year</label>
-                                    <select class="w-full bg-slate-100 border-none rounded-md px-4 py-3 appearance-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all" id="year">
-                                        <option value="4">Final Year</option>
-                                        <option value="3">Third Year</option>
-                                        <option value="2">Second Year</option>
-                                    </select>
-                                </div>
-                                <!-- Division -->
-                                <div class="space-y-2">
-                                    <label class="text-sm font-semibold text-indigo-900/70 ml-1">Division</label>
-                                    <select class="w-full bg-slate-100 border-none rounded-md px-4 py-3 appearance-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all" id="division">
-                                        <option value="A">A</option>
-                                        <option value="B">B</option>
-                                        <option value="C">C</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <!-- Exam Type -->
-                            <div class="space-y-2">
-                                <label class="text-sm font-semibold text-indigo-900/70 ml-1">Exam Types</label>
-                                <div class="flex flex-wrap gap-2">
-                                    <label class="flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-full cursor-pointer hover:bg-white transition-all">
-                                        <input type="checkbox" checked value="theory" class="rounded-full text-primary focus:ring-primary"/>
-                                        <span class="text-sm font-medium">Theory</span>
-                                    </label>
-                                    <label class="flex items-center gap-2 bg-slate-100 px-4 py-2 rounded-full cursor-pointer hover:bg-white transition-all">
-                                        <input type="checkbox" value="practical" class="rounded-full text-primary focus:ring-primary"/>
-                                        <span class="text-sm font-medium">Practical</span>
-                                    </label>
-                                </div>
-                            </div>
-                            <!-- Date Range -->
-                            <div class="space-y-2">
-                                <label class="text-sm font-semibold text-indigo-900/70 ml-1">Date Range</label>
-                                <div class="flex items-center gap-3 bg-slate-100 px-4 py-3 rounded-md">
-                                    <span class="material-symbols-outlined text-primary text-xl">calendar_month</span>
-                                    <input type="text" id="dateRange" class="bg-transparent border-none p-0 focus:ring-0 text-sm font-medium w-full" placeholder="Ex: Oct 12 - Oct 28, 2024"/>
-                                </div>
-                            </div>
+        <form id="planForm" class="space-y-10">
+            <!-- 1. Branch Selection -->
+            <section class="space-y-4">
+                <h2 class="headline text-xl font-bold flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center text-sm">01</span>
+                    Select Branches
+                </h2>
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <label class="relative group cursor-pointer">
+                        <input type="checkbox" name="branches" value="AIDS" class="peer sr-only" checked>
+                        <div class="bg-white/5 border border-white/10 p-4 rounded-xl peer-checked:bg-blue-500/10 peer-checked:border-blue-500 transition-all">
+                            <span class="block text-sm font-bold headline">AIDS</span>
                         </div>
-                        <button id="generateBtn" class="w-full py-5 rounded-full bg-gradient-to-r from-primary to-secondary text-white font-bold text-lg shadow-xl hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:scale-100 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-3 group" type="submit">
-                            <span id="generateBtnText">Trigger Generation</span>
-                            <span id="generateBtnIcon" class="material-symbols-outlined group-hover:translate-x-1 transition-transform">auto_awesome</span>
-                        </button>
-                    </form>
+                    </label>
+                    <label class="relative group cursor-pointer">
+                        <input type="checkbox" name="branches" value="CS" class="peer sr-only" checked>
+                        <div class="bg-white/5 border border-white/10 p-4 rounded-xl peer-checked:bg-blue-500/10 peer-checked:border-blue-500 transition-all">
+                            <span class="block text-sm font-bold headline">CS</span>
+                        </div>
+                    </label>
                 </div>
+            </section>
 
-                <div id="results" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl"></div>
-
-                <div id="errorCard" class="hidden max-w-3xl bg-red-50 border border-red-200 text-red-800 rounded-xl p-5 shadow-sm">
-                    <div class="flex justify-between items-start gap-4">
-                        <div>
-                            <h3 class="font-headline font-bold text-lg mb-1">Generation failed</h3>
-                            <p id="errorMessage" class="text-sm mb-3"></p>
-                            <ul id="missingList" class="text-sm list-disc list-inside space-y-1"></ul>
+            <!-- 2. Subject Inputs -->
+            <section class="space-y-6">
+                <h2 class="headline text-xl font-bold flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center text-sm">02</span>
+                    Subject Details (6 per branch)
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- AIDS Card -->
+                    <div id="card-AIDS" class="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
+                        <h3 class="text-blue-400 font-bold headline">AIDS Subjects</h3>
+                        <div class="space-y-2" id="inputs-AIDS">
+                            <!-- JS will populate or manual placeholders -->
                         </div>
-                        <button id="gotoAdmin" type="button" class="shrink-0 px-4 py-2 bg-red-600 text-white rounded-full text-sm font-semibold hover:bg-red-700 transition-colors">Go to Admin Panel to Fix</button>
+                    </div>
+
+                    <!-- CS Card -->
+                    <div id="card-CS" class="bg-white/5 border border-white/10 rounded-2xl p-6 space-y-4">
+                        <h3 class="text-indigo-400 font-bold headline">CS Subjects</h3>
+                        <div class="space-y-2" id="inputs-CS">
+                            <!-- JS will populate -->
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
+            </section>
 
-        <!-- Progress Overlay (Hidden initially) -->
-        <div id="progressOverlay" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white">
-            <div class="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mb-6"></div>
-            <h2 class="font-headline text-3xl font-bold mb-2">Generating optimized schedules...</h2>
-            <p class="text-white/60 font-medium">Evolutionary algorithm calculating optimal paths...</p>
+            <!-- 3. Date Range -->
+            <section class="space-y-4">
+                <h2 class="headline text-xl font-bold flex items-center gap-2">
+                    <span class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center text-sm">03</span>
+                    Exam Schedule
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Start Date</label>
+                        <input type="date" id="start_date" class="w-full bg-white/5 border-white/10 rounded-xl px-4 py-3 focus:ring-blue-500 focus:border-blue-500 text-white">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-widest">End Date</label>
+                        <input type="date" id="end_date" class="w-full bg-white/5 border-white/10 rounded-xl px-4 py-3 focus:ring-blue-500 focus:border-blue-500 text-white">
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. Actions -->
+            <div class="pt-8 border-t border-white/10 flex flex-col sm:flex-row gap-4">
+                <button type="button" id="fillDemo" class="flex-1 py-4 px-6 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold transition-all flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined">bolt</span>
+                    Fill Demo Data
+                </button>
+                <button type="submit" id="generateBtn" class="flex-[2] py-4 px-6 rounded-xl gradient-bg hover:opacity-90 text-white font-bold shadow-lg shadow-blue-600/20 transition-all flex items-center justify-center gap-2">
+                    <span>Generate Exam Plan</span>
+                    <span class="material-symbols-outlined">rocket_launch</span>
+                </button>
+            </div>
+        </form>
+
+        <!-- Preview Section -->
+        <div id="previewPanel" class="mt-20 hidden space-y-4">
+            <h3 class="headline text-lg font-bold">Quick Preview</h3>
+            <div class="bg-white/5 border border-white/10 rounded-2xl p-6">
+                <div id="previewContent" class="text-sm text-slate-400 space-y-2"></div>
+            </div>
         </div>
     </main>
 
+    <!-- Loading Overlay -->
+    <div id="loader" class="fixed inset-0 bg-slate-900/90 backdrop-blur-md z-[100] hidden flex flex-col items-center justify-center">
+        <div class="w-16 h-16 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mb-6"></div>
+        <p class="headline font-bold text-2xl tracking-tight">Generating Optimized Plan...</p>
+        <p class="text-slate-500 mt-2">Allocating rooms and mixing branches using AI engine</p>
+    </div>
+
     <script>
-        const schedulesUrl = "{{ url_for('schedules') }}";
-        const adminUrl = "{{ url_for('admin') }}";
-        const resultsContainer = document.getElementById('results');
-        const errorCard = document.getElementById('errorCard');
-        const errorMessage = document.getElementById('errorMessage');
-        const missingList = document.getElementById('missingList');
-        const gotoAdmin = document.getElementById('gotoAdmin');
-        let lastFormData = null;
+        const branches = ['AIDS', 'CS'];
+        const demoSubjects = {
+            'AIDS': ['DL', 'Big Data', 'NLP', 'Computer Vision', 'ML', 'Prob & Stats'],
+            'CS': ['OS', 'DBMS', 'CN', 'Algos', 'Compiler', 'Theory of Comp']
+        };
 
-        function showToast(text, variant = 'success') {
-            const colors = {
-                success: 'bg-emerald-600',
-                error: 'bg-red-600',
-                warn: 'bg-amber-500'
-            };
-            const toast = document.createElement('div');
-            toast.className = `fixed top-6 right-6 z-50 px-4 py-3 rounded-lg shadow-lg text-sm font-semibold text-white ${colors[variant] || colors.success}`;
-            toast.textContent = text;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3200);
-        }
-
-        function renderOptions(options, warning) {
-            resultsContainer.innerHTML = '';
-            options.forEach((schedule, index) => {
-                const card = document.createElement('div');
-                card.className = "bg-white border rounded-lg p-4 shadow-sm";
-                card.innerHTML = `
-                    <h3 class="font-headline font-bold mb-2">Option ${index + 1}</h3>
-                    <pre class="bg-slate-50 p-3 rounded text-xs overflow-auto max-h-48">${JSON.stringify(schedule, null, 2)}</pre>
-                    <button class="mt-3 text-sm font-semibold text-primary underline" onclick="selectSchedule(${index + 1})">Select</button>
-                `;
-                resultsContainer.appendChild(card);
+        function initInputs() {
+            branches.forEach(b => {
+                const container = document.getElementById(`inputs-${b}`);
+                for(let i=1; i<=6; i++) {
+                    const inp = document.createElement('input');
+                    inp.type = 'text';
+                    inp.placeholder = `${b} Subject ${i}`;
+                    inp.name = `subj-${b}-${i}`;
+                    inp.className = `w-full bg-white/5 border-white/10 rounded-lg px-3 py-2 text-sm focus:ring-1 focus:ring-blue-500 transition-all mb-2 sub-input`;
+                    container.appendChild(inp);
+                }
             });
-            if (warning) {
-                const warn = document.createElement('div');
-                warn.className = "col-span-full bg-amber-50 text-amber-800 border border-amber-200 rounded-lg p-3 text-sm";
-                warn.textContent = warning;
-                resultsContainer.appendChild(warn);
-            }
         }
 
-        async function selectSchedule(optionNo) {
-            localStorage.setItem('selectedOption', optionNo);
-            window.location.href = schedulesUrl;
-        }
+        initInputs();
 
-        function showError(details, canAutoFix = false) {
-            errorCard.classList.remove('hidden');
-            errorMessage.textContent = details.message || 'Generation failed. Missing data required to build schedules.';
-            missingList.innerHTML = '';
-            if (Array.isArray(details.missing) && details.missing.length) {
-                details.missing.forEach(id => {
-                    const li = document.createElement('li');
-                    li.textContent = `Subject ID ${id} is missing faculty/class/student mapping`;
-                    missingList.appendChild(li);
+        document.getElementById('fillDemo').addEventListener('click', () => {
+            const today = new Date();
+            document.getElementById('start_date').value = today.toISOString().split('T')[0];
+            const end = new Date();
+            end.setDate(today.getDate() + 6);
+            document.getElementById('end_date').value = end.toISOString().split('T')[0];
+
+            branches.forEach(b => {
+                demoSubjects[b].forEach((s, i) => {
+                    document.querySelector(`[name="subj-${b}-${i+1}"]`).value = s;
                 });
-            }
-            showToast('Generation failed. Please fix mappings.', 'error');
-            if (canAutoFix) {
-                gotoAdmin.textContent = "Auto-Fix Missing Data";
-                gotoAdmin.dataset.mode = "auto";
-            } else {
-                gotoAdmin.textContent = "Go to Admin Panel to Fix";
-                gotoAdmin.dataset.mode = "admin";
-            }
+            });
+            updatePreview();
+        });
+
+        function updatePreview() {
+            const panel = document.getElementById('previewPanel');
+            const content = document.getElementById('previewContent');
+            panel.classList.remove('hidden');
+            
+            let html = `<p><strong>Branches:</strong> ${Array.from(document.querySelectorAll('input[name="branches"]:checked')).map(el => el.value).join(', ')}</p>`;
+            html += `<p><strong>Exam Dates:</strong> ${document.getElementById('start_date').value || 'Not set'} to ${document.getElementById('end_date').value || 'Not set'}</p>`;
+            content.innerHTML = html;
         }
 
-        async function runGeneration(autoFix = false) {
+        document.getElementById('planForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
             const btn = document.getElementById('generateBtn');
-            const btnText = document.getElementById('generateBtnText');
-            const btnIcon = document.getElementById('generateBtnIcon');
+            const loader = document.getElementById('loader');
             
-            const formData = lastFormData || {
-                department: document.getElementById('department').value,
-                year: document.getElementById('year').value,
-                division: document.getElementById('division').value,
-                examTypes: Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(c => c.value),
-                dateRange: document.getElementById('dateRange').value.trim()
-            };
-            
-            // Phase 2 Validation: Check required fields before triggering API
-            if (!formData.dateRange) {
-                showToast('Validation Error: Date Range requires a valid input (e.g. Oct 12 - Oct 28, 2024).', 'warn');
-                return;
-            }
-            if (!formData.examTypes.length) {
-                showToast('Validation Error: You must select at least one Exam Type.', 'warn');
-                return;
+            // Validation
+            const selectedBranches = Array.from(document.querySelectorAll('input[name="branches"]:checked')).map(el => el.value);
+            if(selectedBranches.length === 0) return alert('Select at least one branch');
+
+            const subjects = {};
+            for(const b of selectedBranches) {
+                subjects[b] = [];
+                for(let i=1; i<=6; i++) {
+                    const val = document.querySelector(`[name="subj-${b}-${i}"]`).value;
+                    if(!val) return alert(`Fill all 6 subjects for ${b}`);
+                    subjects[b].push(val);
+                }
             }
 
-            // disable UI during API call
+            const startDate = document.getElementById('start_date').value;
+            const endDate = document.getElementById('end_date').value;
+            if(!startDate || !endDate) return alert('Select dates');
+
+            // API Call
+            loader.classList.remove('hidden');
             btn.disabled = true;
-            btnText.textContent = "Generating...";
-            btnIcon.classList.add('animate-spin');
-
-            document.getElementById('progressOverlay').classList.remove('hidden');
-            errorCard.classList.add('hidden');
-
-            lastFormData = formData;
-            formData.auto_fix = autoFix;
 
             try {
-                const res = await fetch('/generate_api', {
+                const res = await fetch('/generate-plan', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify(formData)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        branches: selectedBranches,
+                        subjects: subjects,
+                        start_date: startDate,
+                        end_date: endDate
+                    })
                 });
                 const data = await res.json();
-                if (!data.success) {
-                    const missing = data.message && data.message.match(/\d+/g);
-                    throw { message: data.message || 'Generation failed', missing };
+                if(data.status === 'success') {
+                    window.location.href = '/result';
+                } else {
+                    alert('Error: ' + data.message);
                 }
-                renderOptions(data.options || [], data.warning);
-                localStorage.setItem('gaOptions', JSON.stringify(data.options || []));
-                
-                showToast('Schedules generated successfully!', 'success');
-                setTimeout(() => { window.location.href = schedulesUrl; }, 1200);
-            } catch (error) {
-                console.error("Error triggering generation:", error);
-                document.getElementById('progressOverlay').classList.add('hidden');
+            } catch (err) {
+                alert('Connection failed');
+            } finally {
+                loader.classList.add('hidden');
                 btn.disabled = false;
-                btnText.textContent = "Trigger Generation";
-                btnIcon.classList.remove('animate-spin');
-                showError({
-                    message: error.message || 'Generation failed. Missing mappings or data.',
-                    missing: error.missing
-                }, true);
-            }
-        }
-
-        document.getElementById('generateForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            runGeneration(false);
-        });
-
-        gotoAdmin.addEventListener('click', () => {
-            if (gotoAdmin.dataset.mode === 'auto') {
-                runGeneration(true);
-            } else {
-                window.location.href = adminUrl;
             }
         });
+
+        document.querySelectorAll('input').forEach(el => el.addEventListener('change', updatePreview));
     </script>
 </body>
 </html>
