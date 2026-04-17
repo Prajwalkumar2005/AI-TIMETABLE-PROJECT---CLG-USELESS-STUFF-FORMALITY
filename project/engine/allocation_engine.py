@@ -9,14 +9,14 @@ class AllocationEngine:
         self.students = self._generate_dummy_students()
         
     def _generate_dummy_students(self):
-        # 8 branches, 3 divisions each, ~60 per div
+        # 120 students per branch, 3 divisions, 40 per div
         student_data = []
         divisions = ['A', 'B', 'C']
         for branch in self.branches:
             for div in divisions:
-                for i in range(1, 61):
+                for i in range(1, 41):
                     student_data.append({
-                        'roll_no': f"24{branch}{div}{i:02d}",
+                        'roll_no': f"{branch}-24-{div}{i:02d}",
                         'branch': branch,
                         'div': div
                     })
