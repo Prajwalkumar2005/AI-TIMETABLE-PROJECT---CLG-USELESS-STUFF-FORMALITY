@@ -2,6 +2,14 @@
 
 Lightweight Flask app that uses a genetic algorithm to generate and curate exam timetables (rooms, faculty, clashes) with an Excel export. Frontend is Tailwind-based.
 
+## New: Decision Support System (DSS) Features
+The system now includes a production-grade **Exam Classroom & Faculty Allotment System**:
+- **Automated Seating Allocation**: Intelligent distribution of students across classrooms.
+- **Anti-Cheating Logic**: Round-robin interleaving of students from different branches.
+- **Visual Seating Grid**: Interactive grid view for invigilators.
+- **Professional PDF Reporting**: Branded export with college headers and formatted tables.
+- **File-Based Caching**: Optimized for large datasets (e.g., 240+ students).
+
 ## Stack
 - Python 3.10+ (Flask, mysql-connector-python, pandas, openpyxl)
 - MySQL for persistence (`schema.sql` seeds sample data)
