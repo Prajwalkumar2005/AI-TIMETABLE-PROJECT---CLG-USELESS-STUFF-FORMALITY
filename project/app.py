@@ -175,6 +175,7 @@ def result():
 @app.route('/export_pdf')
 def export_pdf_route():
     try:
+        # Use ReportLab for professional-grade PDF generation
         from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
         from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
         from reportlab.lib import colors
