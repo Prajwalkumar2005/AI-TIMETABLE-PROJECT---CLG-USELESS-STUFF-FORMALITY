@@ -2,6 +2,7 @@ import random
 from collections import defaultdict
 
 class AllocationEngine:
+    """Core logic for managing student distribution and classroom assignment with anti-cheating interleaving."""
     def __init__(self, branches, classrooms, faculty_list):
         self.branches = branches  # List of branch codes
         self.classrooms = classrooms # List of room dicts: {'id': 101, 'capacity': 40}
