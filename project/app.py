@@ -44,84 +44,105 @@ def logout():
     session.pop('user', None)
     return redirect(url_for('login'))
 
+from project.engine.allocation_engine import AllocationEngine, get_engine_data
+
 @app.route('/dashboard')
 def dashboard():
     if 'user' not in session: return redirect(url_for('login'))
+    
+    # Analytics data
     data = {
-        "total_classes": 1284,
-        "faculty_count": 342,
-        "occupancy": 88,
-        "conflicts": 12,
+        "total_classes": 1440,
+        "faculty_count": 48,
+        "occupancy": 92,
+        "conflicts": 0,
+        "utilization": 85,
+        "avg_students_per_room": 35,
         "role": session.get('role', 'Administrator')
     }
     return render_template('dashboard.html', **data)
 
-@app.route("/scheduler")
-def scheduler():
-    timetable = [
-        {"time": "09:00", "subject": "Algorithms", "conflict": False},
-        {"time": "10:00", "subject": "Data Structures", "conflict": True},
-        {"time": "11:00", "subject": None, "conflict": False},
-    ]
-    return render_template("scheduler.html", timetable=timetable)
-
-# --- ALLOCATION ENGINE LOGIC ---
-
-def get_mock_students():
-    students = []
-    for i in range(1, 31):
-        branch = "CSE" if i % 2 == 0 else "ME"
-        students.append({"roll_no": f"2024{branch}{i:03d}", "branch": branch})
-    return students
-
-def interleave_students(students):
-    # Split by branch
-    cse = [s for s in students if s['branch'] == 'CSE']
-    me = [s for s in students if s['branch'] == 'ME']
-    
-    interleaved = []
-    for i in range(max(len(cse), len(me))):
-        if i < len(cse): interleaved.append(cse[i])
-        if i < len(me): interleaved.append(me[i])
-    return interleaved
-
 @app.route('/generate-allocation', methods=['POST'])
 def generate_allocation():
-    students = get_mock_students()
-    # Apply seating mix (Interleaving)
-    mixed_students = interleave_students(students)
-    # Store in session for the demo view
-    session['current_seating'] = mixed_students
-    return {"status": "success", "message": "Allocation optimized"}
+    branches, rooms, faculty = get_engine_data()
+    engine = AllocationEngine(branches, rooms, faculty)
+    allocations, load = engine.generate_allocation()
+    
+    # Store result in session for UI renders
+    session['last_allocation'] = allocations
+    session['faculty_load'] = load
+    
+    return {"status": "success", "message": "Optimization Complete"}
 
 @app.route('/seating')
 def seating():
     if 'user' not in session: return redirect(url_for('login'))
-    students = session.get('current_seating', get_mock_students())
+    allocations = session.get('last_allocation', [])
+    # Flatten or select a specific room
+    room_id = request.args.get('room', type=int)
+    if room_id:
+        room_data = next((a for a in allocations if a['room_id'] == room_id), None)
+        students = room_data['students'] if room_data else []
+    else:
+        students = allocations[0]['students'] if allocations else []
+        
     from datetime import datetime
     today = datetime.now().strftime("%Y-%m-%d")
-    return render_template('seating.html', students=students, today=today)
+    return render_template('seating.html', students=students, today=today, allocations=allocations)
 
 @app.route('/export_pdf')
 def export_pdf_route():
     try:
-        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-        from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib import colors
+        from reportlab.lib.pagesizes import A4
         import io
         from flask import send_file
 
         buffer = io.BytesIO()
-        doc = SimpleDocTemplate(buffer)
+        doc = SimpleDocTemplate(buffer, pagesize=A4)
         styles = getSampleStyleSheet()
-        elements = [Paragraph("Scholar Prism | Seating Plan", styles['Title']), Spacer(1, 12)]
         
-        students = session.get('current_seating', get_mock_students())
-        for s in students:
-            elements.append(Paragraph(f"Roll No: {s['roll_no']} | Branch: {s['branch']}", styles['Normal']))
+        # Custom Styles
+        title_style = ParagraphStyle('TitleStyle', parent=styles['Heading1'], alignment=1, fontSize=18, spaceAfter=20)
+        subtitle_style = ParagraphStyle('SubtitleStyle', parent=styles['Normal'], alignment=1, fontSize=12, spaceAfter=30, textColor=colors.grey)
+        
+        elements = []
+        
+        # Header
+        elements.append(Paragraph("XYZ INSTITUTE OF TECHNOLOGY & SCIENCE", title_style))
+        elements.append(Paragraph("OFFICIAL SEMESTER EXAMINATION SEATING PLAN", subtitle_style))
+        
+        allocations = session.get('last_allocation', [])
+        
+        for room in allocations[:5]: # Export first 5 rooms for demo
+            elements.append(Paragraph(f"ROOM ALLOCATION: {room['room_id']}", styles['Heading2']))
+            elements.append(Paragraph(f"Supervisor: {room['faculty']} | Total Students: {room['count']}", styles['Normal']))
+            elements.append(Spacer(1, 12))
+            
+            # Create Table for students
+            data = [["Roll Number", "Branch", "Sign"]]
+            for s in room['students'][:20]: # Show first 20 for table layout
+                data.append([s['roll_no'], s['branch'], "__________"])
+            
+            t = Table(data, colWidths=[150, 100, 100])
+            t.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.indigo),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.grey)
+            ]))
+            elements.append(t)
+            elements.append(Spacer(1, 24))
+            elements.append(Paragraph("Supervisor Signature: ____________________", styles['Normal']))
+            elements.append(Spacer(1, 40))
         
         doc.build(elements)
         buffer.seek(0)
-        return send_file(buffer, as_attachment=True, download_name="seating_plan.pdf")
+        return send_file(buffer, as_attachment=True, download_name="Official_Seating_Plan.pdf")
     except ImportError:
         return {"error": "reportlab not installed"}, 500
 

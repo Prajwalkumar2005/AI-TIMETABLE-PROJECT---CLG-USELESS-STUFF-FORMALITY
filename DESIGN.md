@@ -1,26 +1,31 @@
-# DESIGN.md - The Obsidian Allotment
+# Scholar Prism - Design System
 
-## 1. Creative North Star: "The Crystal Engine"
-The UI for the "Exam Classroom & Faculty Allotment System" should feel like a high-end data cockpit: transparent, layered, and intuitively powerful.
+## Vision
+A premium, dark-themed Decision Support System for academic exam management.
 
-## 2. Visual Strategy
-We utilize **Glassmorphism** and **Tonal Depth**.
-- **Background**: Deep Obsidian (#0F172A)
-- **Surfaces**: Semi-transparent glass panes with `backdrop-filter: blur(20px)` and soft border glows.
-- **Accents**: Cyber Blue (#0EA5E9) and Electric Purple (#8B5CF6) gradients.
-- **Grids**: Minimalist layout with status-based neon highlights.
+## Visual Identity
 
-## 3. UI Tokens
-- **Primary**: Cyber Blue (#0EA5E9)
-- **Secondary**: Electric Purple (#8B5CF6)
-- **Success**: Emerald Green (#10B981)
-- **Warning**: Amber Glow (#F59E0B)
-- **Danger**: Crimson Neon (#EF4444)
-- **Typography**: Manrope for headlines, Inter for functional data.
-- **Radius**: 16px (Main cards), 8px (Small items).
+### Color Palette
+- **Primary:** `bg-indigo-600` (#4F46E5) - Main actions and branding
+- **Surface:** `bg-[#0F172A]` (#0F172A) - Deep background
+- **Surface-Variant:** `bg-slate-900/40` - Active containers
+- **Success:** `bg-emerald-500` - Optimized status
+- **Warning:** `bg-amber-500` - Minor conflicts
+- **Error:** `bg-red-500` - Hard constraints violated
 
-## 4. Components
-- **Stats Card**: Large glass box with a subtle gradient background and prominent data.
-- **Data Table**: Transparent rows with hover-glow and sticky headers.
-- **Seating Units**: Small squares with student roll numbers, colored by branch.
-- **Buttons**: Linear-gradient backgrounds with subtle outer-glow on hover.
+### Typography
+- **Headlines:** 'Manrope' (800 weight) - Bold, modern tracking
+- **Body:** 'Inter' (400-600 weight) - High readability
+
+### Components
+- **Glass Cards:** `backdrop-blur-xl border-white/10 bg-white/5`
+- **Gradients:** `bg-gradient-to-br from-indigo-600 to-purple-600`
+- **Animations:** 
+  - Hover: `hover:scale-[1.02] hover:shadow-2xl`
+  - Active: `active:scale-95`
+  - Feedback: Pulsing status dots for AI decisions
+
+## Layout System
+- **Sidebar:** Fixed 72px/280px left navigation
+- **Grid:** Responsive auto-fill columns (min 300px)
+- **Contrast:** High contrast white text on slate/indigo surfaces
