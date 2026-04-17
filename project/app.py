@@ -65,6 +65,79 @@ def scheduler():
     ]
     return render_template("scheduler.html", timetable=timetable)
 
+# --- ALLOCATION ENGINE LOGIC ---
+
+def get_mock_students():
+    students = []
+    for i in range(1, 31):
+        branch = "CSE" if i % 2 == 0 else "ME"
+        students.append({"roll_no": f"2024{branch}{i:03d}", "branch": branch})
+    return students
+
+def interleave_students(students):
+    # Split by branch
+    cse = [s for s in students if s['branch'] == 'CSE']
+    me = [s for s in students if s['branch'] == 'ME']
+    
+    interleaved = []
+    for i in range(max(len(cse), len(me))):
+        if i < len(cse): interleaved.append(cse[i])
+        if i < len(me): interleaved.append(me[i])
+    return interleaved
+
+@app.route('/generate-allocation', methods=['POST'])
+def generate_allocation():
+    students = get_mock_students()
+    # Apply seating mix (Interleaving)
+    mixed_students = interleave_students(students)
+    # Store in session for the demo view
+    session['current_seating'] = mixed_students
+    return {"status": "success", "message": "Allocation optimized"}
+
+@app.route('/seating')
+def seating():
+    if 'user' not in session: return redirect(url_for('login'))
+    students = session.get('current_seating', get_mock_students())
+    from datetime import datetime
+    today = datetime.now().strftime("%Y-%m-%d")
+    return render_template('seating.html', students=students, today=today)
+
+@app.route('/export_pdf')
+def export_pdf_route():
+    try:
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+        from reportlab.lib.styles import getSampleStyleSheet
+        import io
+        from flask import send_file
+
+        buffer = io.BytesIO()
+        doc = SimpleDocTemplate(buffer)
+        styles = getSampleStyleSheet()
+        elements = [Paragraph("Scholar Prism | Seating Plan", styles['Title']), Spacer(1, 12)]
+        
+        students = session.get('current_seating', get_mock_students())
+        for s in students:
+            elements.append(Paragraph(f"Roll No: {s['roll_no']} | Branch: {s['branch']}", styles['Normal']))
+        
+        doc.build(elements)
+        buffer.seek(0)
+        return send_file(buffer, as_attachment=True, download_name="seating_plan.pdf")
+    except ImportError:
+        return {"error": "reportlab not installed"}, 500
+
+def detect_conflicts(assignments):
+    conflicts = []
+    faculty_map = {}
+    for a in assignments:
+        key = (a['faculty_id'], a['time'])
+        if key in faculty_map:
+            conflicts.append(a)
+        else:
+            faculty_map[key] = True
+    return conflicts
+
+# --- EXISTING ROUTES ---
+
 @app.route('/teacher_dashboard')
 def teacher_dashboard():
     if 'user' not in session or session.get('role') != 'Teacher': return redirect(url_for('login'))
